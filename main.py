@@ -36,8 +36,8 @@ def main():
               [sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, size=(40, 10), orientation='h', key='-SLIDER-DATAPOINTS-')],
               [sg.Text('Sample size:', font = 'Helvetica 12')],
               [sg.Slider(range=(100, 5000), default_value=1000, resolution=100, size=(40, 10), orientation='h', key='-SLIDER-SAMPLE-')],
-              [sg.Text('Enter confidence interval'), sg.InputText(key = 'conf', size =(10,10))],
-              [sg.Combo(["Gaussian", "Normal"], default_value = 'Gaussian', key = '-DROP-DIST-')],
+              [sg.Text('Enter confidence interval'), sg.InputText(key = '-TEXT-CONF-', size =(10,10))],
+              [sg.Combo(["Gaussian", "Uniform", "Laplace_diff"], default_value = 'Gaussian', key = '-DROP-DIST-')],
               [sg.Button('Update', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')],
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
 
@@ -67,17 +67,18 @@ def main():
         if event in ('Update', None):
 
             # Get values from slider input
-            std = float(values['-SLIDER-DATAPOINTS-']) # std
+            std = float(values['-SLIDER-DATAPOINTS-']) # std            
+            Dist = values['-DROP-DIST-']
+            sampsize = int(values['-SLIDER-SAMPLE-'])
+            conf = int(values['-TEXT-CONF-'])
 
             # Define and compute posterior to Deconvolution problem
             TP = cuqi.testproblem.Deconvolution() # Default values
-            #TP.prior = cuqi.distribution.Gaussian(np.zeros(128), std) # Set prior
-            Dist = values['-DROP-DIST-']
-        
-            TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), std) # Set prior
-            sampsize = int(values['-SLIDER-SAMPLE-'])
+            if Dist == "Gaussian":  
+                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), std) # Set prior
+            if Dist == "Laplace_diff":
+                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = 0.5, bc_type = 'periodic')
             xs = TP.sample_posterior(sampsize) # Sample posterior
-            conf = int(values['conf'])
 
             # Update plot
             fig.clear()
