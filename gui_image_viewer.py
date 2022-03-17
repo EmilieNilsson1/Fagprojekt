@@ -1,6 +1,9 @@
 import PySimpleGUI as sg 
 import os.path
 
+#Simple GUI which showcases a small png image the user has chosen
+
+# creating nested list for the left part of the layout where the files while be shown
 file_list_column = [
     [
         sg.Text("Image Folder"),
@@ -12,12 +15,14 @@ file_list_column = [
     ]
 ]
 
+# creating nested list for the right part of the layout where the image is
 image_viewer_column = [
     [sg.Text('Choose an image from the list')],
     [sg.Text(size=(40,1),key = "-TOUT-")],
     [sg.Image(key="-IMAGE-")]   
 ]
 
+# creating layout
 layout = [
     [sg.Column(file_list_column),
     sg.VSeperator(),
