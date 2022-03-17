@@ -64,14 +64,8 @@ def main():
             X = getattr(cuqi.distribution,Fun)(mean=0, std=1) # creating cuqi.distribution object
             Xs = X.sample # extracting samples
 
-            # Define and compute posterior to Deconvolution problem
-            #TP = cuqi.testproblem.Deconvolution() # Default values
-            #TP.prior = cuqi.distribution.Gaussian(np.zeros(128), std) # Set prior
-            #xs = TP.sample_posterior(5000) # Sample posterior
-
             # Update plot
             fig.clear()
-            #xs.plot_ci(95, exact=TP.exactSolution)
             grid = np.linspace(-10, 10, 1001)
             plt.plot(grid, X.pdf(grid))
             
