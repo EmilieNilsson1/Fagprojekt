@@ -8,10 +8,13 @@ import matplotlib.pyplot as plt
 import base64
 import io
 from PIL import Image
-
-# Add CUQIpy (assumed to be in ../cuqipy/)
+import os
 import sys
-sys.path.append("../cuqipy/")
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
 import cuqi
 
 # Add PySimpeGUI
