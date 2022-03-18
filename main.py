@@ -49,7 +49,7 @@ def main():
               [sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, size=(40, 10), orientation='h', key='-SLIDER-DATAPOINTS-')],
               [sg.Text('Sample size:', font = 'Helvetica 12')],
               [sg.Slider(range=(100, 5000), default_value=1000, resolution=100, size=(40, 10), orientation='h', key='-SLIDER-SAMPLE-')],
-              [sg.Text('Enter confidence interval'), sg.InputText(key = '-TEXT-CONF-', size =(10,10))],
+              [sg.Text('Enter confidence interval'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
               [sg.Combo(["Gaussian", "Uniform", "Laplace_diff", "Cauchy_diff"], default_value = 'Gaussian', key = '-DROP-DIST-')],
               [sg.Button('Update', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')],
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
