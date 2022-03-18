@@ -55,7 +55,7 @@ def main():
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
 
     # Create the GUI and show it without the plot
-    window = sg.Window('CUQIpy interactive demo', layout, finalize=True)
+    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True)
 
     # Extract canvas element to attach plot to
     canvas_elem = window['-CANVAS-']
