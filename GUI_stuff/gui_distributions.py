@@ -4,15 +4,22 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 
-# Add CUQIpy (assumed to be in ../cuqipy/)
+# Add CUQIpy
+import os
 import sys
-sys.path.append("../cuqipy/")
+import inspect
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
 import cuqi
 
 # Add PySimpeGUI
 import PySimpleGUI as sg
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+# GUI for plotting different distributions
+# only works for Normal right now
 
 # Convenience method to draw figure
 def draw_figure(canvas, figure):
@@ -42,7 +49,7 @@ def main():
     canvas = canvas_elem.TKCanvas
 
     # Draw the initial figure in the window
-    fig = plt.figure()
+    fig = plt.figure(figsize = (4,2))
     fig_agg = draw_figure(canvas, fig)
 
 
