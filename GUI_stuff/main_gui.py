@@ -51,29 +51,41 @@ def main():
 
     # look into enable_events = True
     # Define the GUI layout
-    layout = [[sg.Text('CUQIpy interactive demo', size=(40, 1), justification='center', font='Helvetica 20')],
-              [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-              [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (100,200)), key = '-GAUSSIAN-'), 
-              sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (100,200)), key = '-LAPLACE-'), 
-              sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (100,200)), key = '-CAUCHY-')],
-              [sg.Text('Set prior parameters', font = 'Helvetica 16')],
-              [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
-              place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
-              place(sg.T('0.1', key='-RIGHT1-', visible = False))],
-              [place(sg.Text('Par2', font = 'Helvetica 12', key = '-PAR2-', visible=False)), 
-              place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
-              [sg.Text('Sample size', font = 'Helvetica 12'), 
-              sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
-              sg.T('1000', key='-RIGHT2-')],
-              [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-              [sg.Text('Test problem', font = 'Helvetica 16')],
-              [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
-              [sg.Canvas(size=(640, 480), key='-CANVAS-')],
-              [sg.Button('Update', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')],
-              [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
+    options_column = [
+        [sg.Text('CUQIpy interactive demo', size=(40, 1), justification='center', font='Helvetica 20')],
+        [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (100,200)), key = '-GAUSSIAN-'), 
+        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (100,200)), key = '-LAPLACE-'), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (100,200)), key = '-CAUCHY-')],
+        [sg.Text('Set prior parameters', font = 'Helvetica 16')],
+        [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
+        place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
+        place(sg.T('0.1', key='-RIGHT1-', visible = False))],
+        [place(sg.Text('Par2', font = 'Helvetica 12', key = '-PAR2-', visible=False)), 
+        place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
+        [sg.Text('Sample size', font = 'Helvetica 12'), 
+        sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
+        sg.T('1000', key='-RIGHT2-')],
+        [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
+        [sg.Text('Test problem', font = 'Helvetica 16')],
+        [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
+        [sg.Button('Update', size=(10, 1), font='Helvetica 14'),#pad=((280, 0), 3)
+        sg.Button('Exit', size=(10, 1), font='Helvetica 14')]
+    ]
+
+    plot_column = [
+        [sg.Canvas(size=(640, 480), key='-CANVAS-')]
+    ]
+
+    layout = [
+        [sg.Column(options_column),
+        sg.VSeperator(),
+        sg.Column(plot_column),]
+    ]
 
     # Create the GUI and show it without the plot
-    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, element_justification='c')
+    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, element_justification='c').Finalize()
+    window.Maximize()
 
     # Extract canvas element to attach plot to
 
@@ -82,7 +94,7 @@ def main():
 
     # Draw the initial figure in the window
 
-    fig = plt.figure(figsize = (6,2.5))
+    fig = plt.figure(figsize = (3,3))
     fig_agg = draw_figure(canvas, fig)
 
     Dist = "Gaussian"
@@ -165,12 +177,12 @@ def main():
             # Update plot
             # Solution:
             fig.clear()
-            plt.subplot(122)
+            plt.subplot(212)
             xs.plot_ci(conf, exact=TP.exactSolution)
             
             # Noisy data:
             grid = np.linspace(0,128, 128)
-            plt.subplot(121)
+            plt.subplot(211)
             plt.plot(grid, TP.data)
             plt.legend(['Noisy data'], loc = 1)
             fig_agg.draw()
