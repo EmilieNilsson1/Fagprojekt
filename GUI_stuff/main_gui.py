@@ -53,9 +53,9 @@ def main():
     # Define the GUI layout
     layout = [[sg.Text('CUQIpy interactive demo', size=(40, 1), justification='center', font='Helvetica 20')],
               [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-              [sg.Button('Gaussian', image_data = resize_base64_image("test.png", (100,200)), key = '-GAUSSIAN-'), 
-              sg.Button('Laplace_diff', image_data = resize_base64_image("test.png", (100,200)), key = '-LAPLACE-'), 
-              sg.Button('Cauchy', image_data = resize_base64_image("test.png", (100,200)), key = '-CAUCHY-')],
+              [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (100,200)), key = '-GAUSSIAN-'), 
+              sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (100,200)), key = '-LAPLACE-'), 
+              sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (100,200)), key = '-CAUCHY-')],
               [sg.Text('Set prior parameters', font = 'Helvetica 16')],
               [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
               place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
@@ -73,7 +73,7 @@ def main():
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
 
     # Create the GUI and show it without the plot
-    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True)
+    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, element_justification='c')
 
     # Extract canvas element to attach plot to
 
@@ -82,10 +82,10 @@ def main():
 
     # Draw the initial figure in the window
 
-    fig = plt.figure(figsize = (6,4))
+    fig = plt.figure(figsize = (6,2.5))
     fig_agg = draw_figure(canvas, fig)
 
-
+    Dist = "Gaussian"
     while True:
 
         # Read current events and values from GUI
@@ -165,14 +165,14 @@ def main():
             # Update plot
             # Solution:
             fig.clear()
-            plt.subplot(212)
+            plt.subplot(122)
             xs.plot_ci(conf, exact=TP.exactSolution)
             
             # Noisy data:
             grid = np.linspace(0,128, 128)
-            plt.subplot(211)
+            plt.subplot(121)
             plt.plot(grid, TP.data)
-            plt.legend(['Noisy data'])
+            plt.legend(['Noisy data'], loc = 1)
             fig_agg.draw()
             # Print update in console
             print(" Figure updated!")
