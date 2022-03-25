@@ -41,19 +41,32 @@ def resize_base64_image(image, size):
     imgbytes = bio.getvalue()
     return imgbytes
 
+# So elements dont move when changing visibility
+def place(elem): 
+    return sg.Column([[elem]], pad=(0,0))
+
+
 # Main method
 def main():
 
+    # look into enable_events = True
     # Define the GUI layout
     layout = [[sg.Text('CUQIpy interactive demo', size=(40, 1), justification='center', font='Helvetica 20')],
-              [sg.Button('Gaussian', image_data = resize_base64_image("test.png", (100,200))), sg.Button('Laplace_diff', image_data = resize_base64_image("test.png", (100,200))), sg.Button('Cauchy', image_data = resize_base64_image("test.png", (100,200)))],
+              [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
+              [sg.Button('Gaussian', image_data = resize_base64_image("test.png", (100,200)), key = '-GAUSSIAN-'), 
+              sg.Button('Laplace_diff', image_data = resize_base64_image("test.png", (100,200)), key = '-LAPLACE-'), 
+              sg.Button('Cauchy', image_data = resize_base64_image("test.png", (100,200)), key = '-CAUCHY-')],
+              [sg.Text('Set prior parameters', font = 'Helvetica 16')],
+              [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
+              place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
+              place(sg.T('0.1', key='-RIGHT1-', visible = False))],
+              [place(sg.Text('Par2', font = 'Helvetica 12', key = '-PAR2-', visible=False)), 
+              place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
+              [sg.Text('Sample size', font = 'Helvetica 12'), 
+              sg.Slider(range=(100, 5000), default_value=1000, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
+              sg.T('1000', key='-RIGHT2-')],
+              [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
               [sg.Canvas(size=(640, 480), key='-CANVAS-')],
-              [sg.Text('Prior std:', font = 'Helvetica 12')],
-              [sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, size=(40, 10), orientation='h', key='-SLIDER-DATAPOINTS-')],
-              [sg.Text('Sample size:', font = 'Helvetica 12')],
-              [sg.Slider(range=(100, 5000), default_value=1000, resolution=100, size=(40, 10), orientation='h', key='-SLIDER-SAMPLE-')],
-              [sg.Text('Enter confidence interval'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-              [sg.Combo(["Gaussian", "Uniform", "Laplace_diff", "Cauchy_diff"], default_value = 'Gaussian', key = '-DROP-DIST-')],
               [sg.Button('Update', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')],
               [sg.Button('Exit', size=(10, 1), pad=((280, 0), 3), font='Helvetica 14')]]
 
@@ -76,33 +89,77 @@ def main():
         # Clicked exit button
         if event in ('Exit', None):
             exit()
+        
+        window.Element('-RIGHT1-').update(values['-SLIDER1-']) # updates slider values
+        window.Element('-RIGHT2-').update(int(values['-SLIDER-SAMPLE-'])) 
+
+        # Select prior distribution
+        # buttons change accordingly
+        if event == '-GAUSSIAN-':
+            Dist = "Gaussian"
+            window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
+            window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON) 
+            window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            window['-PAR1-'].update(visible = True)
+            window['-SLIDER1-'].update(visible=True)
+            window['-RIGHT1-'].update(visible=True)
+            window['-PAR1-'].update('Prior std')
+            window['-PAR2-'].update(visible = False) # removes buttons if other prior was chosen first
+            window['-BCTYPE-'].update(visible = False)
+        if event == '-LAPLACE-':
+            Dist = "Laplace_diff"
+            window['-LAPLACE-'].update(button_color='white on green')
+            window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            window['-PAR1-'].update(visible = True)
+            window['-SLIDER1-'].update(visible=True)
+            window['-RIGHT1-'].update(visible=True)
+            window['-PAR1-'].update('Scale')
+            window['-PAR2-'].update(visible = True) # add new parameter
+            window['-PAR2-'].update('Boundary')
+            window['-BCTYPE-'].update(visible = True)
+        if event == '-CAUCHY-':
+            Dist = "Cauchy_diff"
+            window['-CAUCHY-'].update(button_color='white on green')
+            window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            window['-PAR1-'].update(visible = True)
+            window['-SLIDER1-'].update(visible=True)
+            window['-RIGHT1-'].update(visible=True)
+            window['-PAR1-'].update('Scale')
+            window['-PAR2-'].update(visible = True)
+            window['-PAR2-'].update('Boundary')
+            window['-BCTYPE-'].update(visible = True)
 
         # Clicked update button
         if event in ('Update', None):
 
             # Get values from input
-            std = float(values['-SLIDER-DATAPOINTS-']) # std           
-            Dist = values['-DROP-DIST-']
+            par1 = float(values['-SLIDER1-'])
+            par2 = values['-BCTYPE-']
             sampsize = int(values['-SLIDER-SAMPLE-'])
             conf = int(values['-TEXT-CONF-'])
 
             # Define and compute posterior to Deconvolution problem
             TP = cuqi.testproblem.Deconvolution() # Default values
+
+            # maybe plot signal? : 
+            #grid = np.linspace(0,128, 128)
+            #plt.plot(grid, TP.data)
             
             if Dist == "Gaussian": 
-                Dist = "Gaussian" 
-                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), std) # Set prior
-            #if event == 'Laplace_diff':
+                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
+            
             if Dist == "Laplace_diff":
-                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = 0.5, bc_type = 'periodic')
-                print(Dist)
+                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+                
             if Dist == "Cauchy_diff":
-                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = 0.5, bc_type = 'periodic')
+                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+           
             xs = TP.sample_posterior(sampsize) # Sample posterior
-
+    
             # Update plot
             fig.clear()
-            #xs.plot_ci(95, exact=TP.exactSolution)
             xs.plot_ci(conf, exact=TP.exactSolution)
             plt.ylim([-0.5,1.5])
             
@@ -115,6 +172,5 @@ def main():
 if __name__ == '__main__':
     sg.change_look_and_feel('BlueMono') #Theme
     main() #Runs main method
-
 
 # %%
