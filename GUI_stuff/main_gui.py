@@ -12,14 +12,16 @@ import os
 import sys
 import inspect
 
+# Add PySimpeGUI
+import PySimpleGUI as sg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 import cuqi
 
-# Add PySimpeGUI
-import PySimpleGUI as sg
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 
 # Convenience method to draw figure
@@ -52,12 +54,14 @@ def main():
     # look into enable_events = True
     # Define the GUI layout
     options_column = [
-        [sg.Text('CUQIpy interactive demo', size=(40, 1), justification='center', font='Helvetica 20')],
+        [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font='Helvetica 20')],
+        [sg.Text('Choose test problem', font = 'Helvetica 16')],
+        [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (100,200)), key = '-GAUSSIAN-'), 
-        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (100,200)), key = '-LAPLACE-'), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (100,200)), key = '-CAUCHY-')],
-        [sg.Text('Set prior parameters', font = 'Helvetica 16')],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-'), 
+        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-'), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-')],
+        [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
         place(sg.T('0.1', key='-RIGHT1-', visible = False))],
@@ -67,14 +71,13 @@ def main():
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-')],
         [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-        [sg.Text('Test problem', font = 'Helvetica 16')],
-        [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL')],
         [sg.Button('Update', size=(10, 1), font='Helvetica 14'),#pad=((280, 0), 3)
         sg.Button('Exit', size=(10, 1), font='Helvetica 14')]
     ]
 
     plot_column = [
-        [sg.Canvas(size=(640, 480), key='-CANVAS-')]
+        [sg.Canvas(size=(1100, 620), key='-CANVAS-')]
     ]
 
     layout = [
@@ -84,7 +87,7 @@ def main():
     ]
 
     # Create the GUI and show it without the plot
-    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, element_justification='c').Finalize()
+    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, ).Finalize()
     window.Maximize()
 
     # Extract canvas element to attach plot to
@@ -94,10 +97,10 @@ def main():
 
     # Draw the initial figure in the window
 
-    fig = plt.figure(figsize = (3,3))
+    fig = plt.figure(figsize = (6,6))
     fig_agg = draw_figure(canvas, fig)
 
-    Dist = "Gaussian"
+    Dist = "Gaussian" # setting Gaussian as default
     while True:
 
         # Read current events and values from GUI
@@ -114,6 +117,7 @@ def main():
         # buttons change accordingly
         if event == '-GAUSSIAN-':
             Dist = "Gaussian"
+            window['PRIOR_TEXT'].update('Set parameters for gaussian distribution')
             window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
             window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON) 
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -125,6 +129,7 @@ def main():
             window['-BCTYPE-'].update(visible = False)
         elif event == '-LAPLACE-':
             Dist = "Laplace_diff"
+            window['PRIOR_TEXT'].update('Set parameters for laplace distribution')
             window['-LAPLACE-'].update(button_color='white on green')
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -137,6 +142,7 @@ def main():
             window['-BCTYPE-'].update(visible = True)
         elif event == '-CAUCHY-':
             Dist = "Cauchy_diff"
+            window['PRIOR_TEXT'].update('Set parameters for cauchy distribution')
             window['-CAUCHY-'].update(button_color='white on green')
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -175,10 +181,12 @@ def main():
             xs = TP.sample_posterior(sampsize) # Sample posterior
     
             # Update plot
+            show_true = bool(values['TRUE_SIGNAL'])
             # Solution:
             fig.clear()
             plt.subplot(212)
-            xs.plot_ci(conf, exact=TP.exactSolution)
+            if show_true: xs.plot_ci(conf, exact=TP.exactSolution)
+            else: xs.plot_ci(conf)
             
             # Noisy data:
             grid = np.linspace(0,128, 128)
@@ -186,11 +194,12 @@ def main():
             plt.plot(grid, TP.data)
             plt.legend(['Noisy data'], loc = 1)
             fig_agg.draw()
+            
             # Print update in console
             print(" Figure updated!")
 
 if __name__ == '__main__':
-    sg.change_look_and_feel('BlueMono') #Theme
+    sg.change_look_and_feel('Dark Blue 12') #Theme
     main() #Runs main method
 
 # %%
