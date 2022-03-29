@@ -59,8 +59,9 @@ def main():
         [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
+        sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
+        sg.Button('Uniform', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
         [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
@@ -71,7 +72,7 @@ def main():
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-')],
         [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL')],
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
         [sg.Button('Update', size=(10, 1), font='Helvetica 14'),#pad=((280, 0), 3)
         sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14')]
@@ -123,6 +124,7 @@ def main():
             window['-GAUSSIAN-'].update(button_color=(None,'green'))
             window['-CAUCHY-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-UNI-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
@@ -136,6 +138,7 @@ def main():
             window['-LAPLACE-'].update(button_color=(None,'green'))
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-CAUCHY-'].update(button_color = sg.TRANSPARENT_BUTTON)
+            window['-UNI-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
@@ -148,6 +151,7 @@ def main():
             window['PRIOR_TEXT'].update('Set parameters for cauchy distribution')
             window['-CAUCHY-'].update(button_color=(None, 'green')) #'white on green')
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-UNI-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
             window['-SLIDER1-'].update(visible=True)
@@ -156,7 +160,19 @@ def main():
             window['-PAR2-'].update(visible = True)
             window['-PAR2-'].update('Boundary')
             window['-BCTYPE-'].update(visible = True)
+        elif event == '-UNI-':
+            Dist == 'Uniform'
+            window['-UNI-'].update(button_color=(None, 'green')) #'white on green')
+            window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            window['-CAUCHY-'].update(button_color = sg.TRANSPARENT_BUTTON)
+            window['-PAR1-'].update(visible = True)
+            window['-SLIDER1-'].update(visible=True)
+            window['-RIGHT1-'].update(visible=True)
+            window['-PAR1-'].update('Spread')
 
+
+    
         # Clicked update button
         if event in ('Update', None):
 
@@ -180,35 +196,57 @@ def main():
                 
             if Dist == "Cauchy_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+            if Dist == "Uniform":
+                Low = 0-par1
+                High = 0+par1
+                TP.prior = getattr(cuqi.distribution, Dist)(low = Low, high = High)
+                
            
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
             except:
                 window['-FIGUP-'].update(visible = True)
                 window['-FIGUP-'].update(text_color = 'red')
-                window['-FIGUP-'].update('Combination not supported')
+                window['-FIGUP-'].update('Sampler not implemented')
             else:
                 window['-FIGUP-'].update('Figure updated!')
                 window['-FIGUP-'].update(text_color = 'green')
                 window['-FIGUP-'].update(visible = True)
     
                 # Update plot
-                show_true = bool(values['TRUE_SIGNAL'])
+                grid = np.linspace(0,128, 128)
                 # Solution:
                 fig.clear()
-                plt.subplot(212)
-                if show_true: xs.plot_ci(conf, exact=TP.exactSolution)
-                else: xs.plot_ci(conf)
-                
-                # Noisy data:
-                grid = np.linspace(0,128, 128)
                 plt.subplot(211)
                 plt.plot(grid, TP.data)
                 plt.legend(['Noisy data'], loc = 1)
+                plt.subplot(212)
+                
+                xs.plot_ci(conf)
+                
+                # Noisy data:
+                
+              
                 fig_agg.draw()
                 
                 # Print update in console
                 print(" Figure updated!")
+
+        #if event == 'TRUE_SIGNAL':
+        show_true = values['TRUE_SIGNAL']
+        if show_true:
+            try:
+                p1 = plt.plot(grid, TP.exactSolution, color = 'darkorange')
+                fig_agg.draw()
+            except:
+                pass
+        else:
+            try:
+                p = p1.pop(0)
+                p.remove()
+                fig_agg.draw()
+            except:
+                pass
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
