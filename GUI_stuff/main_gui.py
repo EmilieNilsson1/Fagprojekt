@@ -58,9 +58,9 @@ def main():
         [sg.Text('Choose test problem', font = 'Helvetica 16')],
         [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 100, mouseover_colors=('black', 'black'), auto_size_button=True), 
-        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), mouseover_colors=('black', 'black')), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), mouseover_colors=('black', 'black'))],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True), 
+        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True)],
         [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
