@@ -58,9 +58,9 @@ def main():
         [sg.Text('Choose test problem', font = 'Helvetica 16')],
         [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-'), 
-        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-'), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-')],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 100, mouseover_colors=('black', 'black'), auto_size_button=True), 
+        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), mouseover_colors=('black', 'black')), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), mouseover_colors=('black', 'black'))],
         [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
@@ -118,9 +118,10 @@ def main():
         if event == '-GAUSSIAN-':
             Dist = "Gaussian"
             window['PRIOR_TEXT'].update('Set parameters for gaussian distribution')
-            window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
-            window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON) 
-            window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            #window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
+            window['-GAUSSIAN-'].update(button_color=(None,'green'))
+            window['-CAUCHY-'].update(button_color= sg.TRANSPARENT_BUTTON)
+            window['-LAPLACE-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
@@ -130,9 +131,10 @@ def main():
         elif event == '-LAPLACE-':
             Dist = "Laplace_diff"
             window['PRIOR_TEXT'].update('Set parameters for laplace distribution')
-            window['-LAPLACE-'].update(button_color='white on green')
+            #window['-LAPLACE-'].update(button_color='white on green')
+            window['-LAPLACE-'].update(button_color=(None,'green'))
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
-            window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
+            window['-CAUCHY-'].update(button_color = sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
@@ -143,7 +145,7 @@ def main():
         elif event == '-CAUCHY-':
             Dist = "Cauchy_diff"
             window['PRIOR_TEXT'].update('Set parameters for cauchy distribution')
-            window['-CAUCHY-'].update(button_color='white on green')
+            window['-CAUCHY-'].update(button_color=(None, 'green')) #'white on green')
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-PAR1-'].update(visible = True)
