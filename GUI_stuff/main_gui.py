@@ -3,7 +3,6 @@
 # Basic packages
 from email.policy import default
 import numpy as np
-from py import process
 import scipy as sp
 import matplotlib.pyplot as plt
 import base64
@@ -62,7 +61,7 @@ def main():
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Uniform', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
+        sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
         [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
@@ -164,6 +163,7 @@ def main():
         elif event == '-UNI-':
             Dist == 'Uniform'
             window['-UNI-'].update(button_color=(None, 'green')) #'white on green')
+            window['PRIOR_TEXT'].update('Set parameters for uniform distribution')
             window['-GAUSSIAN-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-CAUCHY-'].update(button_color = sg.TRANSPARENT_BUTTON)
