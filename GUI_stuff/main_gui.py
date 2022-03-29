@@ -88,7 +88,7 @@ def main():
     ]
 
     # Create the GUI and show it without the plot
-    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, ).Finalize()
+    window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, icon='cookieIcon.ico' ).Finalize()
     window.Maximize()
 
     # Extract canvas element to attach plot to
