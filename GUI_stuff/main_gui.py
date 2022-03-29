@@ -58,9 +58,9 @@ def main():
         [sg.Text('Choose test problem', font = 'Helvetica 16')],
         [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True), 
-        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True)],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
+        sg.Button('Laplace_diff', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
         [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
         [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
@@ -73,7 +73,8 @@ def main():
         [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL')],
         [sg.Button('Update', size=(10, 1), font='Helvetica 14'),#pad=((280, 0), 3)
-        sg.Button('Exit', size=(10, 1), font='Helvetica 14')]
+        sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
+        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14')]
     ]
 
     plot_column = [
@@ -180,25 +181,34 @@ def main():
             if Dist == "Cauchy_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
            
-            xs = TP.sample_posterior(sampsize) # Sample posterior
+            try:
+                xs = TP.sample_posterior(sampsize) # Sample posterior
+            except:
+                window['-FIGUP-'].update(visible = True)
+                window['-FIGUP-'].update(text_color = 'red')
+                window['-FIGUP-'].update('Combination not supported')
+            else:
+                window['-FIGUP-'].update('Figure updated!')
+                window['-FIGUP-'].update(text_color = 'green')
+                window['-FIGUP-'].update(visible = True)
     
-            # Update plot
-            show_true = bool(values['TRUE_SIGNAL'])
-            # Solution:
-            fig.clear()
-            plt.subplot(212)
-            if show_true: xs.plot_ci(conf, exact=TP.exactSolution)
-            else: xs.plot_ci(conf)
-            
-            # Noisy data:
-            grid = np.linspace(0,128, 128)
-            plt.subplot(211)
-            plt.plot(grid, TP.data)
-            plt.legend(['Noisy data'], loc = 1)
-            fig_agg.draw()
-            
-            # Print update in console
-            print(" Figure updated!")
+                # Update plot
+                show_true = bool(values['TRUE_SIGNAL'])
+                # Solution:
+                fig.clear()
+                plt.subplot(212)
+                if show_true: xs.plot_ci(conf, exact=TP.exactSolution)
+                else: xs.plot_ci(conf)
+                
+                # Noisy data:
+                grid = np.linspace(0,128, 128)
+                plt.subplot(211)
+                plt.plot(grid, TP.data)
+                plt.legend(['Noisy data'], loc = 1)
+                fig_agg.draw()
+                
+                # Print update in console
+                print(" Figure updated!")
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
