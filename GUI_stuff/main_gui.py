@@ -3,6 +3,7 @@
 # Basic packages
 from email.policy import default
 import numpy as np
+from py import process
 import scipy as sp
 import matplotlib.pyplot as plt
 import base64
@@ -73,9 +74,9 @@ def main():
         sg.T('1000', key='-RIGHT2-')],
         [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
-        [sg.Button('Update', size=(10, 1), font='Helvetica 14'),#pad=((280, 0), 3)
+        [sg.Button('Update', size=(10, 1), font='Helvetica 14'),
         sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
-        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14')]
+        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14', enable_events = True)]
     ]
 
     plot_column = [
@@ -172,9 +173,10 @@ def main():
             window['-PAR1-'].update('Spread')
 
 
-    
         # Clicked update button
         if event in ('Update', None):
+            #window['-FIGUP-'].update(visible = True)
+            #window['-FIGUP-'].update('Loading...')
 
             # Get values from input
             par1 = float(values['-SLIDER1-'])
@@ -183,7 +185,6 @@ def main():
             conf = int(values['-TEXT-CONF-'])
 
             # Define and compute posterior to Deconvolution problem
-            #TP = cuqi.testproblem.Deconvolution() # Default values
             prob = values['-TESTPROB-']
             TP = getattr(cuqi.testproblem, prob)()
 
@@ -196,12 +197,12 @@ def main():
                 
             if Dist == "Cauchy_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+            
             if Dist == "Uniform":
                 Low = 0-par1
                 High = 0+par1
                 TP.prior = getattr(cuqi.distribution, Dist)(low = Low, high = High)
                 
-           
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
             except:
@@ -215,24 +216,18 @@ def main():
     
                 # Update plot
                 grid = np.linspace(0,128, 128)
-                # Solution:
                 fig.clear()
                 plt.subplot(211)
-                plt.plot(grid, TP.data)
+                plt.plot(grid, TP.data) # Noisy data
                 plt.legend(['Noisy data'], loc = 1)
                 plt.subplot(212)
-                
-                xs.plot_ci(conf)
-                
-                # Noisy data:
-                
-              
+                xs.plot_ci(conf) # Solution
                 fig_agg.draw()
                 
                 # Print update in console
                 print(" Figure updated!")
 
-        #if event == 'TRUE_SIGNAL':
+        # Show true signal
         show_true = values['TRUE_SIGNAL']
         if show_true:
             try:
