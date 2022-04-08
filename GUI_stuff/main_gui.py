@@ -47,7 +47,6 @@ def resize_base64_image(image, size):
 def place(elem): 
     return sg.Column([[elem]], pad=(0,0))
 
-
 # Main method
 def main():
 
@@ -55,8 +54,10 @@ def main():
     # Define the GUI layout
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font='Helvetica 20')],
-        [sg.Text('Choose test problem', font = 'Helvetica 16')],
-        [sg.Combo(['Abel_1D', 'Deblur', 'Deconv_1D','Deconvolution'],key = '-TESTPROB-' , default_value='Deconvolution')], #'Heat_1D', 'Poisson_1D'
+        [sg.Text('Choose test signal', font = 'Helvetica 16')],
+        [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
+        [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
+        sg.T('0.05', key='-RIGHTn-', visible = True)],
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
@@ -82,11 +83,21 @@ def main():
         [sg.Canvas(size=(1100, 620), key='-CANVAS-')]
     ]
 
-    layout = [
+    # 1D layout:
+    tab1_layout = [
         [sg.Column(options_column),
         sg.VSeperator(),
         sg.Column(plot_column),]
     ]
+
+    # 2D layout:
+    tab2_layout = [[sg.Text('This is inside tab 2')],
+               [sg.Input(key='-in2-')]]
+    
+    layout = [[sg.TabGroup([[sg.Tab('1D convolution', tab1_layout, key='Tab1', title_color = 'black'),
+                         sg.Tab('2D convolution', tab2_layout, key = 'Tab2')]],
+                       key='-TABS-', title_color='black',
+                       selected_title_color='white', tab_location='topleft', font = 'Helvetica 16')]]
 
     # Create the GUI and show it without the plot
     window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, ).Finalize()
@@ -114,6 +125,7 @@ def main():
         
         window.Element('-RIGHT1-').update(values['-SLIDER1-']) # updates slider values
         window.Element('-RIGHT2-').update(int(values['-SLIDER-SAMPLE-'])) 
+        window.Element('-RIGHTn-').update(values['-SLIDER-NOISE-'])
 
         # Select prior distribution
         # buttons change accordingly
@@ -183,11 +195,12 @@ def main():
             par2 = values['-BCTYPE-']
             sampsize = int(values['-SLIDER-SAMPLE-'])
             conf = int(values['-TEXT-CONF-'])
+            n_std = float(values['-SLIDER-NOISE-'])
+            print(n_std)
 
             # Define and compute posterior to Deconvolution problem
-            prob = values['-TESTPROB-']
-            TP = getattr(cuqi.testproblem, prob)()
-
+            sig = values['-TESTSIG-']
+            TP = cuqi.testproblem.Deconvolution(phantom = sig, noise_std = n_std)
             
             if Dist == "Gaussian": 
                 TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
@@ -219,7 +232,7 @@ def main():
                 fig.clear()
                 plt.subplot(211)
                 plt.plot(grid, TP.data) # Noisy data
-                plt.legend(['Noisy data'], loc = 1)
+                plt.legend(['Measured data'], loc = 1)
                 plt.subplot(212)
                 xs.plot_ci(conf) # Solution
                 fig_agg.draw()
