@@ -5,8 +5,10 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 # parameters
+# no. of elements in psf array
 psf_size = 10
-noise_level = 0.01
+# std of noise
+noise_level = 0.005
 
 # Creating input
 x1,x2,x3,x4 = [0]*11,[1]*10,[-1]*10,[0]*10
@@ -18,22 +20,24 @@ def normd(x):
     return prob_density
 
 p = np.zeros(psf_size)
+# array for plotting psf
+p_plot = p
 p[0] = normd(0)
 for i in range(1,psf_size):
     p[i]=normd(0.25*i)
 p *= 1/(np.sum(p))
-
+p_plot = np.append(p,np.zeros(x.size//4))
 p = np.append(p,np.zeros(x.size-psf_size))
 A = linalg.toeplitz(p,p)
 print("cond of A is",np.linalg.cond(A))
 
 # Adding noise
-noise = noise_level*np.random.rand(x.size)
+noise = np.random.normal(0,noise_level,size=x.size)
 b_smooth = A@x
-b_smooth += noise
+b_smooth_noise = b_smooth + noise
 
 # Recreating input signal
-x_solve = linalg.solve(A,b_smooth)
+x_solve = linalg.solve(A,b_smooth_noise)
 
 # Plotting results
 plt.figure(0)
@@ -41,13 +45,23 @@ plt.plot(range(x.size),x)
 plt.title("Input signal")
 
 plt.figure(1)
-plt.plot(range(x.size),x)
-plt.plot(range(b_smooth.size),b_smooth)
-plt.title("Input + blurred input")
+plt.plot(range(x.size),x,label = "True signal")
+plt.plot(range(b_smooth_noise.size),b_smooth_noise, label = "Blurred signal")
+#plt.title("True and blurred signal", fontsize = 18)
+plt.legend(loc =2, fontsize = 8)
+# small plot
+plt.axes([.65, .6, .2, .2])
+a = plt.plot(np.append(np.flip(p_plot),p_plot),'g')
+plt.axis('on')
+plt.title("Point Spread Function", fontsize=8)
+plt.xticks([])
+plt.yticks([])
+plt.savefig('1dsimple.png',dpi = 350)
 
-plt.figure(2)
+plt.figure(3)
 plt.plot(range(x.size),x_solve)
 plt.title("Reconstructed input")
+plt.savefig("bad_recon.png", dpi = 350)
 
 # Maybe wanted to do some subplots
 # fig, sub = plt.subplots(3)
@@ -58,4 +72,3 @@ plt.title("Reconstructed input")
 # sub[1].set_title("Input + blurred input")
 # sub[2].plot(range(x.size),x_solve)
 # sub[2].set_title("Reconstructed input signal")
-# %%
