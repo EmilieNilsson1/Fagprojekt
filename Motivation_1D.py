@@ -5,7 +5,7 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 # parameters
-psf_size = 10
+psf_size = 12
 noise_level = 0.01
 
 # Creating input
@@ -18,11 +18,13 @@ def normd(x):
     return prob_density
 
 p = np.zeros(psf_size)
+# array for plotting psf
+p_plot = p
 p[0] = normd(0)
 for i in range(1,psf_size):
     p[i]=normd(0.25*i)
 p *= 1/(np.sum(p))
-
+p_plot = np.append(p,np.zeros(x.size//4))
 p = np.append(p,np.zeros(x.size-psf_size))
 A = linalg.toeplitz(p,p)
 print("cond of A is",np.linalg.cond(A))
@@ -43,11 +45,22 @@ plt.title("Input signal")
 plt.figure(1)
 plt.plot(range(x.size),x)
 plt.plot(range(b_smooth.size),b_smooth)
-plt.title("Input + blurred input")
+plt.title("True and blurred signal", fontsize = 18)
+# small plot
+a = plt.axes([.65, .6, .2, .2])
+plt.plot(np.append(np.flip(p_plot),p_plot),'g')
+plt.title("Point Spread Function", fontsize=8)
+plt.xticks([])
+plt.yticks([])
+plt.savefig('1dsimple.png',dpi = 300)
 
-plt.figure(2)
-plt.plot(range(x.size),x_solve)
-plt.title("Reconstructed input")
+# plt.figure(2)
+# plt.plot(np.append(np.flip(p_plot),p_plot))
+# plt.title("Point Spread Function")
+
+# plt.figure(3)
+# plt.plot(range(x.size),x_solve)
+# plt.title("Reconstructed input")
 
 # Maybe wanted to do some subplots
 # fig, sub = plt.subplots(3)
