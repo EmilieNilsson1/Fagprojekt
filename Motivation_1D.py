@@ -5,8 +5,10 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 # parameters
+# no. of elements in psf array
 psf_size = 10
-noise_level = 0.01
+# std of noise
+noise_level = 0.005
 
 # Creating input
 x1,x2,x3,x4 = [0]*11,[1]*10,[-1]*10,[0]*10
@@ -30,12 +32,12 @@ A = linalg.toeplitz(p,p)
 print("cond of A is",np.linalg.cond(A))
 
 # Adding noise
-noise = noise_level*np.random.rand(x.size)
+noise = np.random.normal(0,noise_level,size=x.size)
 b_smooth = A@x
-b_smooth += noise
+b_smooth_noise = b_smooth + noise
 
 # Recreating input signal
-x_solve = linalg.solve(A,b_smooth)
+x_solve = linalg.solve(A,b_smooth_noise)
 
 # Plotting results
 plt.figure(0)
@@ -44,7 +46,7 @@ plt.title("Input signal")
 
 plt.figure(1)
 plt.plot(range(x.size),x,label = "True signal")
-plt.plot(range(b_smooth.size),b_smooth, label = "Blurred signal")
+plt.plot(range(b_smooth_noise.size),b_smooth_noise, label = "Blurred signal")
 #plt.title("True and blurred signal", fontsize = 18)
 plt.legend(loc =2, fontsize = 8)
 # small plot
@@ -70,4 +72,3 @@ plt.savefig("bad_recon.png", dpi = 350)
 # sub[1].set_title("Input + blurred input")
 # sub[2].plot(range(x.size),x_solve)
 # sub[2].set_title("Reconstructed input signal")
-# %%
