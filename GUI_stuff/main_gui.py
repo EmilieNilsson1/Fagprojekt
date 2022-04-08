@@ -73,7 +73,7 @@ def main():
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-')],
         [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
+        [sg.Checkbox('Show true signal', default=True, key='TRUE_SIGNAL', enable_events = True), sg.Checkbox('Show confidence interval', default=True, key='PLOT-CONF', enable_events = True)],
         [sg.Button('Update', size=(10, 1), font='Helvetica 14'),
         sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14', enable_events = True)]
@@ -196,7 +196,6 @@ def main():
             sampsize = int(values['-SLIDER-SAMPLE-'])
             conf = int(values['-TEXT-CONF-'])
             n_std = float(values['-SLIDER-NOISE-'])
-            print(n_std)
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG-']
@@ -218,6 +217,8 @@ def main():
                 
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
+                samp = xs.samples
+                mean = np.mean(samp, axis=-1)
             except:
                 window['-FIGUP-'].update(visible = True)
                 window['-FIGUP-'].update(text_color = 'red')
@@ -231,10 +232,13 @@ def main():
                 grid = np.linspace(0,128, 128)
                 fig.clear()
                 plt.subplot(211)
-                plt.plot(grid, TP.data) # Noisy data
+                plt.plot(grid, TP.data, color = 'darkorange') # Noisy data
                 plt.legend(['Measured data'], loc = 1)
                 plt.subplot(212)
-                xs.plot_ci(conf) # Solution
+                xs.plot_ci(conf, color = 'blue') # Solution
+
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
                 fig_agg.draw()
                 
                 # Print update in console
@@ -242,9 +246,33 @@ def main():
 
         # Show true signal
         show_true = values['TRUE_SIGNAL']
+        show_ci = values['PLOT-CONF']
+        if not show_ci: # plot mean
+            try:
+                plt.subplot(212).clear()
+                samp = xs.samples
+                meansamp = np.mean(samp, axis = -1)
+                plt.plot(grid, meansamp, color = 'blue', label = 'Mean')
+                plt.xlabel('x')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                plt.legend()
+                fig_agg.draw()
+            except: pass
+        else: # plot_ci
+            try:
+                plt.subplot(212).clear()
+                xs.plot_ci(conf, color = 'blue')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                fig_agg.draw()
+            except: pass
         if show_true:
             try:
-                p1 = plt.plot(grid, TP.exactSolution, color = 'darkorange')
+                p1 = plt.plot(grid, TP.exactSolution, color = 'red', label = 'True signal')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                #plt.legend()
                 fig_agg.draw()
             except:
                 pass
