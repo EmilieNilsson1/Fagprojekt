@@ -5,7 +5,7 @@ from scipy import linalg
 import matplotlib.pyplot as plt
 
 # parameters
-psf_size = 12
+psf_size = 10
 noise_level = 0.01
 
 # Creating input
@@ -49,19 +49,17 @@ plt.plot(range(b_smooth.size),b_smooth, label = "Blurred signal")
 plt.legend(loc =2, fontsize = 8)
 # small plot
 plt.axes([.65, .6, .2, .2])
-plt.plot(np.append(np.flip(p_plot),p_plot),'g')
+a = plt.plot(np.append(np.flip(p_plot),p_plot),'g')
+plt.axis('on')
 plt.title("Point Spread Function", fontsize=8)
 plt.xticks([])
 plt.yticks([])
 plt.savefig('1dsimple.png',dpi = 350)
 
-# plt.figure(2)
-# plt.plot(np.append(np.flip(p_plot),p_plot))
-# plt.title("Point Spread Function")
-
-# plt.figure(3)
-# plt.plot(range(x.size),x_solve)
-# plt.title("Reconstructed input")
+plt.figure(3)
+plt.plot(range(x.size),x_solve)
+plt.title("Reconstructed input")
+plt.savefig("bad_recon.png", dpi = 350)
 
 # Maybe wanted to do some subplots
 # fig, sub = plt.subplots(3)
