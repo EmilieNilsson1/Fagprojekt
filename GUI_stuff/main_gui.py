@@ -211,7 +211,7 @@ def main():
                 window['-FIGUP-'].update('Sampler not implemented')
             else:
                 window['-FIGUP-'].update('Figure updated!')
-                window['-FIGUP-'].update(text_color = 'green')
+                window['-FIGUP-'].update(text_color = 'white')
                 window['-FIGUP-'].update(visible = True)
     
                 # Update plot
