@@ -236,7 +236,6 @@ def main():
                 plt.legend(['Measured data'], loc = 1)
                 plt.subplot(212)
                 xs.plot_ci(conf, color = 'blue') # Solution
-
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 fig_agg.draw()
@@ -247,12 +246,12 @@ def main():
         # Show true signal
         show_true = values['TRUE_SIGNAL']
         show_ci = values['PLOT-CONF']
-        if not show_ci: # plot mean
+        if not show_ci and not show_true: # plot mean
             try:
                 plt.subplot(212).clear()
                 samp = xs.samples
                 meansamp = np.mean(samp, axis = -1)
-                plt.plot(grid, meansamp, color = 'blue', label = 'Mean')
+                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
                 plt.xlabel('x')
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
@@ -262,27 +261,35 @@ def main():
         else: # plot_ci
             try:
                 plt.subplot(212).clear()
-                xs.plot_ci(conf, color = 'blue')
+                xs.plot_ci(conf)
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 fig_agg.draw()
             except: pass
-        if show_true:
+        if show_true and show_ci:
             try:
-                p1 = plt.plot(grid, TP.exactSolution, color = 'red', label = 'True signal')
+                plt.subplot(212).clear()
+                xs.plot_ci(conf, exact=TP.exactSolution)
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
-                #plt.legend()
                 fig_agg.draw()
             except:
                 pass
-        else:
+        if show_true and not show_ci:
             try:
-                p = p1.pop(0)
-                p.remove()
+                plt.subplot(212).clear()
+                samp = xs.samples
+                meansamp = np.mean(samp, axis = -1)
+                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
+                plt.plot(grid, TP.exactSolution, color = 'orange', label = 'Exact')
+                plt.xlabel('x')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                plt.legend()
                 fig_agg.draw()
             except:
                 pass
+
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
