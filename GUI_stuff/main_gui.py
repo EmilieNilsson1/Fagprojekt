@@ -158,6 +158,8 @@ def main():
             window['-PAR2-'].update(visible = True) # add new parameter
             window['-PAR2-'].update('Boundary')
             window['-BCTYPE-'].update(visible = True)
+            window['-FIGUP-'].update(visible = True)
+            window['-FIGUP-'].update('Might take a while')
         elif event == '-CAUCHY-':
             Dist = "Cauchy_diff"
             window['PRIOR_TEXT'].update('Set parameters for cauchy distribution')
