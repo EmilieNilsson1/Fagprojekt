@@ -57,7 +57,7 @@ def main():
         [sg.Text('Choose test signal', font = 'Helvetica 16')],
         [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
-        sg.T('0.05', key='-RIGHTn-', visible = True)],
+        sg.T('0.05', key='-RIGHTn-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
         [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
@@ -71,9 +71,10 @@ def main():
         place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
         [sg.Text('Sample size', font = 'Helvetica 12'), 
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
-        sg.T('1000', key='-RIGHT2-')],
-        [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90)],
-        [sg.Checkbox('Show true signal', default=True, key='TRUE_SIGNAL', enable_events = True), sg.Checkbox('Show confidence interval', default=True, key='PLOT-CONF', enable_events = True)],
+        sg.T('1000', key='-RIGHT2-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
+        [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
+        sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
         [sg.Button('Update', size=(10, 1), font='Helvetica 14'),
         sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14', enable_events = True)]
@@ -196,6 +197,7 @@ def main():
             sampsize = int(values['-SLIDER-SAMPLE-'])
             conf = int(values['-TEXT-CONF-'])
             n_std = float(values['-SLIDER-NOISE-'])
+            print(n_std)
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG-']
@@ -217,8 +219,6 @@ def main():
                 
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
-                samp = xs.samples
-                mean = np.mean(samp, axis=-1)
             except:
                 window['-FIGUP-'].update(visible = True)
                 window['-FIGUP-'].update(text_color = 'red')
@@ -232,12 +232,10 @@ def main():
                 grid = np.linspace(0,128, 128)
                 fig.clear()
                 plt.subplot(211)
-                plt.plot(grid, TP.data, color = 'darkorange') # Noisy data
+                plt.plot(grid, TP.data) # Noisy data
                 plt.legend(['Measured data'], loc = 1)
                 plt.subplot(212)
-                xs.plot_ci(conf, color = 'blue') # Solution
-                plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
+                xs.plot_ci(conf) # Solution
                 fig_agg.draw()
                 
                 # Print update in console
@@ -245,51 +243,19 @@ def main():
 
         # Show true signal
         show_true = values['TRUE_SIGNAL']
-        show_ci = values['PLOT-CONF']
-        if not show_ci and not show_true: # plot mean
+        if show_true:
             try:
-                plt.subplot(212).clear()
-                samp = xs.samples
-                meansamp = np.mean(samp, axis = -1)
-                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
-                plt.xlabel('x')
-                plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                plt.legend()
-                fig_agg.draw()
-            except: pass
-        else: # plot_ci
-            try:
-                plt.subplot(212).clear()
-                xs.plot_ci(conf)
-                plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                fig_agg.draw()
-            except: pass
-        if show_true and show_ci:
-            try:
-                plt.subplot(212).clear()
-                xs.plot_ci(conf, exact=TP.exactSolution)
-                plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
+                p1 = plt.plot(grid, TP.exactSolution, color = 'darkorange')
                 fig_agg.draw()
             except:
                 pass
-        if show_true and not show_ci:
+        else:
             try:
-                plt.subplot(212).clear()
-                samp = xs.samples
-                meansamp = np.mean(samp, axis = -1)
-                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
-                plt.plot(grid, TP.exactSolution, color = 'orange', label = 'Exact')
-                plt.xlabel('x')
-                plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                plt.legend()
+                p = p1.pop(0)
+                p.remove()
                 fig_agg.draw()
             except:
                 pass
-
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
