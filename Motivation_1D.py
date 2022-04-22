@@ -33,12 +33,14 @@ print("cond of A is",np.linalg.cond(A))
 
 # Adding noise
 noise = np.random.normal(0,noise_level,size=x.size)
+print("2-norm of noise is", np.linalg.norm(noise))
 b_smooth = A@x
 b_smooth_noise = b_smooth + noise
 
 # Recreating input signal
 x_solve = linalg.solve(A,b_smooth_noise)
 
+print("2-norm of solution x is", np.linalg.norm(x_solve))
 # Plotting results
 plt.figure(0)
 plt.plot(range(x.size),x)
@@ -72,3 +74,5 @@ plt.savefig("bad_recon.png", dpi = 350)
 # sub[1].set_title("Input + blurred input")
 # sub[2].plot(range(x.size),x_solve)
 # sub[2].set_title("Reconstructed input signal")
+
+# %%
