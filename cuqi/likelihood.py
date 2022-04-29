@@ -1,12 +1,12 @@
-#from cuqi.distribution import Distribution #How to avoid circular import?
 from cuqi.model import Model
-from cuqi.utilities import getNonDefaultArgs
+from cuqi.utilities import get_non_default_args
 import warnings
 
 class Likelihood(object):
     """Likelihood function defined from a conditional distribution and observation.
 
-    The likelihood takes the value of the logpdf of a distribution given an observation.
+    The likelihood function L(x|d) evaluated at x is defined via a pdf of a conditional
+    distribution of the observed data d given the parameter value x, P(d|x).
     The geometry is automatically determined from the model of data distribution.
     Generates instance of cuqi.likelihood.Likelihood
     
@@ -135,7 +135,7 @@ class UserDefinedLikelihood(object):
 
     def get_parameter_names(self):
         """Return parameter names of likelihood"""
-        return getNonDefaultArgs(self.logpdf_func)
+        return get_non_default_args(self.logpdf_func)
 
     def __repr__(self) -> str:
         return "CUQI {} function. Parameters {}.".format(self.__class__.__name__,self.get_parameter_names())

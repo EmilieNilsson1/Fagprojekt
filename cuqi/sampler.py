@@ -2,7 +2,7 @@ import scipy as sp
 import scipy.stats as sps
 import numpy as np
 
-from cuqi.distribution import Laplace_diff
+from cuqi.distribution import Normal
 # import matplotlib
 # import matplotlib.pyplot as plt
 eps = np.finfo(float).eps
@@ -12,10 +12,12 @@ from cuqi.solver import CGLS
 from cuqi.samples import Samples
 from abc import ABC, abstractmethod
 
+import sys
+
 #===================================================================
 class Sampler(ABC):
 
-    def __init__(self, target, x0=None, dim=None):
+    def __init__(self, target, x0=None, dim=None, callback=None):
 
         self._dim = dim
         if hasattr(target,'dim'): 
@@ -31,6 +33,8 @@ class Sampler(ABC):
         if x0 is None:
             x0 = np.ones(self.dim)
         self.x0 = x0
+
+        self.callback = callback
 
     @property
     def geometry(self):
@@ -114,16 +118,23 @@ class Sampler(ABC):
     def _print_progress(self,s,Ns):
         """Prints sampling progress"""
         if (s % (max(Ns//100,1))) == 0:
-            print("\r",'Sample', s, '/', Ns, end="")
-        elif s == Ns:
-            print("\r",'Sample', s, '/', Ns)
+            msg = f'Sample {s} / {Ns}'
+            sys.stdout.write('\r'+msg)
+        if s==Ns:
+            msg = f'Sample {s} / {Ns}'
+            sys.stdout.write('\r'+msg+'\n')
+
+    def _call_callback(self, sample, sample_index):
+        """ Calls the callback function. Assumes input is sample and sample index"""
+        if self.callback is not None:
+            self.callback(sample, sample_index)
 
 class ProposalBasedSampler(Sampler,ABC):
-    def __init__(self, target,  proposal=None, scale=1, x0=None, dim=None):
+    def __init__(self, target,  proposal=None, scale=1, x0=None, dim=None, **kwargs):
         #TODO: after fixing None dim
         #if dim is None and hasattr(proposal,'dim'):
         #    dim = proposal.dim
-        super().__init__(target, x0=x0, dim=dim)
+        super().__init__(target, x0=x0, dim=dim, **kwargs)
 
         self.proposal =proposal
         self.scale = scale
@@ -144,10 +155,9 @@ class ProposalBasedSampler(Sampler,ABC):
             geom1=  self.proposal.geometry
         if hasattr(self, 'target') and hasattr(self.target, 'geometry') and self.target.geometry.dim is not None:
             geom2 = self.target.geometry
-
-        if not isinstance(geom1,cuqi.geometry._DefaultGeometry):
+        if not isinstance(geom1,cuqi.geometry._DefaultGeometry) and geom1 is not None:
             return geom1
-        elif not isinstance(geom2,cuqi.geometry._DefaultGeometry): 
+        elif not isinstance(geom2,cuqi.geometry._DefaultGeometry) and geom2 is not None: 
             return geom2
         else:
             return cuqi.geometry._DefaultGeometry(self.dim)
@@ -174,6 +184,12 @@ class NUTS(Sampler):
     dim : int
         Dimension of parameter space. Required if target logpdf and gradient are callable functions. *Optional*.
 
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
     Example
     -------
     .. code-block:: python
@@ -197,8 +213,8 @@ class NUTS(Sampler):
         samples = sampler.sample(2000)
 
     """
-    def __init__(self, target, x0=None, dim=None, maxdepth=20):
-        super().__init__(target, x0=x0, dim=dim)
+    def __init__(self, target, x0=None, dim=None, maxdepth=20, **kwargs):
+        super().__init__(target, x0=x0, dim=dim, **kwargs)
         self.maxdepth = maxdepth
 
 
@@ -285,6 +301,7 @@ class NUTS(Sampler):
                 epsilon = epsilon_bar   # fix epsilon after burn-in
                 
             self._print_progress(k+1,Ns) #k+1 is the sample number, k is index assuming x0 is the first sample
+            self._call_callback(theta[:, k], k)
 
             # msg
             if (np.mod(k, 25) == 0):
@@ -421,9 +438,15 @@ class Linear_RTO(Sampler):
 
     tol : float
         Tolerance of the inner CGLS solver. *Optional*.
+
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
         
     """
-    def __init__(self, target, x0=None, maxit=10, tol=1e-6, shift=0):
+    def __init__(self, target, x0=None, maxit=10, tol=1e-6, shift=0, **kwargs):
         
         # Accept tuple of inputs and construct posterior
         if isinstance(target, tuple) and len(target) == 5:
@@ -455,7 +478,7 @@ class Linear_RTO(Sampler):
             # Construct posterior
             target = cuqi.distribution.Posterior(L, P)
 
-        super().__init__(target, x0=x0)
+        super().__init__(target, x0=x0, **kwargs)
 
         # Check target type
         if not isinstance(target, cuqi.distribution.Posterior):
@@ -539,7 +562,8 @@ class Linear_RTO(Sampler):
             samples[:, s+1], _ = sim.solve()
 
             self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
-        
+            self._call_callback(samples[:, s+1], s+1)
+
         # remove burn-in
         samples = samples[:, Nb:]
         
@@ -575,6 +599,12 @@ class CWMH(ProposalBasedSampler):
     dim : int
         Dimension of parameter space. Required if target and proposal are callable functions. *Optional*.
 
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
     Example
     -------
     .. code-block:: python
@@ -597,8 +627,8 @@ class CWMH(ProposalBasedSampler):
         samples = sampler.sample(2000)
 
     """
-    def __init__(self, target,  proposal=None, scale=1, x0=None, dim = None):
-        super().__init__(target, proposal=proposal, scale=scale,  x0=x0, dim=dim)
+    def __init__(self, target,  proposal=None, scale=1, x0=None, dim = None, **kwargs):
+        super().__init__(target, proposal=proposal, scale=scale,  x0=x0, dim=dim, **kwargs)
         
     @ProposalBasedSampler.proposal.setter 
     def proposal(self, value):
@@ -639,6 +669,7 @@ class CWMH(ProposalBasedSampler):
             samples[:, s+1], target_eval[s+1], acc[:, s+1] = self.single_update(samples[:, s], target_eval[s])
 
             self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
+            self._call_callback(samples[:, s+1], s+1)
 
         # remove burn-in
         samples = samples[:, Nb:]
@@ -694,7 +725,8 @@ class CWMH(ProposalBasedSampler):
 
             # display iterations 
             self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
-
+            self._call_callback(samples[:, s+1], s+1)
+            
         # remove burn-in
         samples = samples[:, Nb:]
         target_eval = target_eval[Nb:]
@@ -762,6 +794,12 @@ class MetropolisHastings(ProposalBasedSampler):
     dim : int
         Dimension of parameter space. Required if target and proposal are callable functions. *Optional*.
 
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
     Example
     -------
     .. code-block:: python
@@ -786,9 +824,9 @@ class MetropolisHastings(ProposalBasedSampler):
     """
     #target,  proposal=None, scale=1, x0=None, dim=None
     #    super().__init__(target, proposal=proposal, scale=scale,  x0=x0, dim=dim)
-    def __init__(self, target, proposal=None, scale=None, x0=None, dim=None):
+    def __init__(self, target, proposal=None, scale=None, x0=None, dim=None, **kwargs):
         """ Metropolis-Hastings (MH) sampler. Default (if proposal is None) is random walk MH with proposal that is Gaussian with identity covariance"""
-        super().__init__(target, proposal=proposal, scale=scale,  x0=x0, dim=dim)
+        super().__init__(target, proposal=proposal, scale=scale,  x0=x0, dim=dim, **kwargs)
 
 
     @ProposalBasedSampler.proposal.setter 
@@ -826,6 +864,7 @@ class MetropolisHastings(ProposalBasedSampler):
             # run component by component
             samples[:, s+1], target_eval[s+1], acc[s+1] = self.single_update(samples[:, s], target_eval[s])
             self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
+            self._call_callback(samples[:, s+1], s+1)
 
         # remove burn-in
         samples = samples[:, Nb:]
@@ -939,6 +978,12 @@ class pCN(Sampler):
     x0 : `np.ndarray` 
       Initial point for the sampler
 
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
     Example 
     -------
 
@@ -993,8 +1038,8 @@ class pCN(Sampler):
         samples = sampler.sample(5000)
         
     """
-    def __init__(self, target, scale=None, x0=None):
-        super().__init__(target, x0=x0, dim=None) 
+    def __init__(self, target, scale=None, x0=None, **kwargs):
+        super().__init__(target, x0=x0, dim=None, **kwargs) 
         self.scale = scale
     
     @property
@@ -1059,6 +1104,7 @@ class pCN(Sampler):
             samples[:, s+1], loglike_eval[s+1], acc[s+1] = self.single_update(samples[:, s], loglike_eval[s])
 
             self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
+            self._call_callback(samples[:, s+1], s+1)
 
         # remove burn-in
         samples = samples[:, Nb:]
@@ -1117,6 +1163,8 @@ class pCN(Sampler):
             if ((s+1) % (max(Ns//100,1))) == 0 or (s+1) == Ns-1:
                 print("\r",'Sample', s+1, '/', Ns, end="")
 
+            self._call_callback(samples[:, s+1], s+1)
+
         print("\r",'Sample', s+2, '/', Ns)
 
         # remove burn-in
@@ -1151,3 +1199,381 @@ class pCN(Sampler):
             acc = 0
         
         return x_next, loglike_eval_next, acc
+    
+    
+
+#===================================================================
+#===================================================================
+#===================================================================
+class ULA(Sampler):
+    """Unadjusted Langevin algorithm (ULA) (Roberts and Tweedie, 1996)
+
+    Samples a distribution given its logpdf and gradient (up to a constant) based on
+    Langevin diffusion dL_t = dW_t + 1/2*Nabla target.logpdf(L_t)dt,  where L_t is 
+    the Langevin diffusion and W_t is the `dim`-dimensional standard Brownian motion.
+
+    For more details see: Roberts, G. O., & Tweedie, R. L. (1996). Exponential convergence
+    of Langevin distributions and their discrete approximations. Bernoulli, 341-363.
+
+    Parameters
+    ----------
+
+    target : `cuqi.distribution.Distribution`
+        The target distribution to sample. Must have logpdf and gradient method. Custom logpdfs 
+        and gradients are supported by using a :class:`cuqi.distribution.UserDefinedDistribution`.
+    
+    x0 : ndarray
+        Initial parameters. *Optional*
+
+    scale : int
+        The Langevin diffusion discretization time step (In practice, a scale of 1/dim**2 is
+        recommended but not guaranteed to be the optimal choice).
+
+    dim : int
+        Dimension of parameter space. Required if target logpdf and gradient are callable 
+        functions. *Optional*.
+
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
+
+    Example
+    -------
+    .. code-block:: python
+
+        # Parameters
+        dim = 5 # Dimension of distribution
+        mu = np.arange(dim) # Mean of Gaussian
+        std = 1 # standard deviation of Gaussian
+
+        # Logpdf function
+        logpdf_func = lambda x: -1/(std**2)*np.sum((x-mu)**2)
+        gradient_func = lambda x: -2/(std**2)*(x - mu)
+
+        # Define distribution from logpdf and gradient as UserDefinedDistribution
+        target = cuqi.distribution.UserDefinedDistribution(dim=dim, logpdf_func=logpdf_func,
+            gradient_func=gradient_func)
+
+        # Set up sampler
+        sampler = cuqi.sampler.ULA(target, scale=1/dim**2)
+
+        # Sample
+        samples = sampler.sample(2000)
+
+    A Deblur example can be found in demos/demo27_ULA.py
+    """
+    def __init__(self, target, scale, x0=None, dim=None, rng=None, **kwargs):
+        super().__init__(target, x0=x0, dim=dim, **kwargs)
+        self.scale = scale
+        self.rng = rng
+
+    def _sample_adapt(self, N, Nb):
+        return self._sample(N, Nb)
+
+    def _sample(self, N, Nb):    
+        # allocation
+        Ns = Nb+N
+        samples = np.empty((self.dim, Ns))
+        target_eval = np.empty(Ns)
+        g_target_eval = np.empty((self.dim, Ns))
+        acc = np.zeros(Ns)
+    
+        # initial state
+        samples[:, 0] = self.x0
+        target_eval[0], g_target_eval[:,0] = self.target.logpdf(self.x0), self.target.gradient(self.x0)
+        acc[0] = 1
+    
+        # ULA
+        for s in range(Ns-1):
+            samples[:, s+1], target_eval[s+1], g_target_eval[:,s+1], acc[s+1] = \
+                self.single_update(samples[:, s], target_eval[s], g_target_eval[:,s])            
+            self._print_progress(s+2,Ns) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
+            self._call_callback(samples[:, s+1], s+1)
+    
+        # apply burn-in 
+        samples = samples[:, Nb:]
+        target_eval = target_eval[Nb:]
+        acc = acc[Nb:]
+        return samples, target_eval, np.mean(acc)
+
+
+    def single_update(self, x_t, target_eval_t, g_target_eval_t):
+
+        # approximate Langevin diffusion
+        w_i = cuqi.distribution.Normal(mean=np.zeros(self.dim),
+            std=np.sqrt(self.scale)).sample(rng=self.rng)
+     
+        x_star = x_t + (self.scale/2)*g_target_eval_t + w_i
+        logpi_eval_star, g_logpi_star = self.target.logpdf(x_star), self.target.gradient(x_star)
+
+        # msg
+        if np.isnan(logpi_eval_star):
+            raise NameError('NaN potential func. Consider using smaller scale parameter')
+        
+        return x_star, logpi_eval_star, g_logpi_star, 1 # sample always accepted without Metropolis correction
+
+
+class MALA(ULA):
+    """  Metropolis-adjusted Langevin algorithm (MALA) (Roberts and Tweedie, 1996)
+
+    Samples a distribution given its logpdf and gradient (up to a constant) based on
+    Langevin diffusion dL_t = dW_t + 1/2*Nabla target.logpdf(L_t)dt,  where L_t is 
+    the Langevin diffusion and W_t is the `dim`-dimensional standard Brownian motion. 
+    The sample is then accepted or rejected according to Metropolis–Hastings algorithm.
+
+    For more details see: Roberts, G. O., & Tweedie, R. L. (1996). Exponential convergence
+    of Langevin distributions and their discrete approximations. Bernoulli, 341-363.
+
+    Parameters
+    ----------
+
+    target : `cuqi.distribution.Distribution`
+        The target distribution to sample. Must have logpdf and gradient method. Custom logpdfs 
+        and gradients are supported by using a :class:`cuqi.distribution.UserDefinedDistribution`.
+    
+    x0 : ndarray
+        Initial parameters. *Optional*
+
+    scale : int
+        The Langevin diffusion discretization time step.
+
+    dim : int
+        Dimension of parameter space. Required if target logpdf and gradient are callable 
+        functions. *Optional*.
+
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
+
+    Example
+    -------
+    .. code-block:: python
+
+        # Parameters
+        dim = 5 # Dimension of distribution
+        mu = np.arange(dim) # Mean of Gaussian
+        std = 1 # standard deviation of Gaussian
+
+        # Logpdf function
+        logpdf_func = lambda x: -1/(std**2)*np.sum((x-mu)**2)
+        gradient_func = lambda x: -2/(std**2)*(x-mu)
+
+        # Define distribution from logpdf as UserDefinedDistribution (sample and gradients also supported)
+        target = cuqi.distribution.UserDefinedDistribution(dim=dim, logpdf_func=logpdf_func,
+            gradient_func=gradient_func)
+
+        # Set up sampler
+        sampler = cuqi.sampler.MALA(target, scale=1/5**2)
+
+        # Sample
+        samples = sampler.sample(2000)
+
+    A Deblur example can be found in demos/demo28_MALA.py
+    """
+    def __init__(self, target, scale, x0=None, dim=None, rng=None, **kwargs):
+        super().__init__(target, scale, x0=x0, dim=dim, rng=rng, **kwargs)
+
+    def single_update(self, x_t, target_eval_t, g_target_eval_t):
+
+        # approximate Langevin diffusion
+        w_i = cuqi.distribution.Normal(mean=np.zeros(self.dim),
+            std=np.sqrt(self.scale)).sample(rng=self.rng)
+
+        x_star = x_t + (self.scale/2)*g_target_eval_t + w_i
+        logpi_eval_star, g_logpi_star = self.target.logpdf(
+            x_star), self.target.gradient(x_star)
+
+        # Metropolis step
+        log_target_ratio = logpi_eval_star - target_eval_t
+        log_prop_ratio = self.log_proposal(x_t, x_star, g_logpi_star) \
+            - self.log_proposal(x_star, x_t,  g_target_eval_t)
+        log_alpha = min(0, log_target_ratio + log_prop_ratio)
+
+        # accept/reject
+        log_u = np.log(cuqi.distribution.Uniform(low=0, high=1).sample(rng=self.rng))
+        if (log_u <= log_alpha) and (np.isnan(logpi_eval_star) == False):
+            return x_star, logpi_eval_star, g_logpi_star, 1
+        else:
+            return x_t.copy(), target_eval_t, g_target_eval_t.copy(), 0
+
+    def log_proposal(self, theta_star, theta_k, g_logpi_k):
+        mu = theta_k + ((self.scale)/2)*g_logpi_k
+        misfit = theta_star - mu
+        return -0.5*((1/(self.scale))*(misfit.T @ misfit))
+
+class UnadjustedLaplaceApproximation(Sampler):
+    """ Unadjusted Laplace approximation sampler
+    
+    Samples an approximate posterior where the prior is approximated
+    by a Gaussian distribution. The likelihood must be Gaussian.
+
+    Currently only works for Laplace_diff priors.
+
+    The inner solver is Conjugate Gradient Least Squares (CGLS) solver.
+
+    For more details see: Uribe, Felipe, et al. "A hybrid Gibbs sampler for edge-preserving 
+    tomographic reconstruction with uncertain view angles." arXiv preprint arXiv:2104.06919 (2021).
+
+    Parameters
+    ----------
+    target : `cuqi.distribution.Posterior`
+        The target posterior distribution to sample.
+
+    x0 : ndarray
+        Initial parameters. *Optional*
+
+    maxit : int
+        Maximum number of inner iterations for solver when generating one sample.
+
+    tol : float
+        Tolerance for inner solver. Will stop before maxit if the inner solvers convergence check reaches tol.
+
+    beta : float
+        Smoothing parameter for the Gaussian approximation of the Laplace distribution. Larger beta is easier to sample but is a worse approximation.
+
+    rng : np.random.RandomState
+        Random number generator used for sampling. *Optional*
+
+    callback : callable, *Optional*
+        If set this function will be called after every sample.
+        The signature of the callback function is `callback(sample, sample_index)`,
+        where `sample` is the current sample and `sample_index` is the index of the sample.
+        An example is shown in demos/demo31_callback.py.
+
+    Returns
+    -------
+    cuqi.samples.Samples
+        Samples from the posterior distribution.
+
+    """
+
+    def __init__(self, target, x0=None, maxit=50, tol=1e-4, beta=1e-5, rng=None, **kwargs):
+        
+        super().__init__(target, x0=x0, **kwargs)
+
+        # Check target type
+        if not isinstance(self.target, cuqi.distribution.Posterior):
+            raise ValueError(f"To initialize an object of type {self.__class__}, 'target' need to be of type 'cuqi.distribution.Posterior'.")       
+
+        # Check Linear model
+        if not isinstance(self.target.likelihood.model, cuqi.model.LinearModel):
+            raise TypeError("Model needs to be linear")
+
+        # Check Gaussian likelihood
+        if not hasattr(self.target.likelihood.distribution, "sqrtprec"):
+            raise TypeError("Distribution in Likelihood must contain a sqrtprec attribute")
+
+        # Check that prior is Laplace_diff
+        if not isinstance(self.target.prior, cuqi.distribution.Laplace_diff):
+            raise ValueError('Unadjusted Laplace approximation requires Laplace_diff prior')
+
+        # Modify initial guess since Sampler sets it to ones.       
+        if x0 is not None:
+            self.x0 = x0
+        else:
+            self.x0 = np.zeros(self.target.prior.dim)
+        
+        # Store internal parameters
+        self.maxit = maxit
+        self.tol = tol
+        self.beta = beta
+        self.rng = rng
+
+    def _sample_adapt(self, Ns, Nb):
+        return self._sample(Ns, Nb)
+
+    def _sample(self, Ns, Nb):
+        """ Sample from the approximate posterior.
+
+        Parameters
+        ----------
+        Ns : int
+            Number of samples to draw.
+
+        Nb : int
+            Number of burn-in samples to discard.
+
+        Returns
+        -------
+        samples : ndarray
+            Samples from the approximate posterior.
+
+        target_eval : ndarray
+            Log-likelihood of each sample.
+
+        acc : ndarray
+            Acceptance rate of each sample.
+
+        """
+
+        # Extract diff_op from target prior
+        D = self.target.prior._diff_op
+        n = D.shape[0]
+
+        # Gaussian approximation of Laplace_diff prior as function of x_k
+        def Lk_fun(x_k):
+            dd =  1/np.sqrt((D @ x_k)**2 + self.beta*np.ones(n))
+            W = sp.sparse.diags(dd)
+            return W.sqrt() @ D
+
+        # Now prepare "Linear_RTO" type sampler. TODO: Use Linear_RTO for this instead
+        self._shift = 0
+
+        # Pre-computations
+        self._model = self.target.likelihood.model   
+        self._data = self.target.likelihood.data
+        self._m = len(self._data)
+        self._L1 = self.target.likelihood.distribution.sqrtprec
+
+        # Initial Laplace approx
+        self._L2 = Lk_fun(self.x0)
+        self._L2mu = self._L2@self.target.prior.location
+        self._b_tild = np.hstack([self._L1@self._data, self._L2mu]) 
+        
+        #self.n = len(self.x0)
+        
+        # Least squares form
+        def M(x, flag):
+            if flag == 1:
+                out1 = self._L1 @ self._model.forward(x)
+                out2 = np.sqrt(1/self.target.prior.scale)*(self._L2 @ x)
+                out  = np.hstack([out1, out2])
+            elif flag == 2:
+                idx = int(self._m)
+                out1 = self._model.adjoint(self._L1.T@x[:idx])
+                out2 = np.sqrt(1/self.target.prior.scale)*(self._L2.T @ x[idx:])
+                out  = out1 + out2                
+            return out 
+        
+        # Initialize samples
+        N = Ns+Nb   # number of simulations        
+        samples = np.empty((self.target.dim, N))
+                     
+        # initial state   
+        samples[:, 0] = self.x0
+        for s in range(N-1):
+
+            # Update Laplace approximation
+            self._L2 = Lk_fun(samples[:, s])
+            self._L2mu = self._L2@self.target.prior.location
+            self._b_tild = np.hstack([self._L1@self._data, self._L2mu]) 
+        
+            # Sample from approximate posterior
+            e = Normal(mean=np.zeros(len(self._b_tild)), std=1).sample(rng=self.rng)
+            y = self._b_tild + e # Perturb data
+            sim = CGLS(M, y, samples[:, s], self.maxit, self.tol, self._shift)            
+            samples[:, s+1], _ = sim.solve()
+
+            self._print_progress(s+2,N) #s+2 is the sample number, s+1 is index assuming x0 is the first sample
+            self._call_callback(samples[:, s+1], s+1)
+
+        # remove burn-in
+        samples = samples[:, Nb:]
+        
+        return samples, None, None
