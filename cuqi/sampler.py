@@ -119,7 +119,7 @@ class Sampler(ABC):
         """Prints sampling progress"""
         if (s % (max(Ns//100,1))) == 0:
             msg = f'Sample {s} / {Ns}'
-            sys.stdout.write('\r'+msg)
+            sys.stdout.write('\r'+msg+'\n')
         if s==Ns:
             msg = f'Sample {s} / {Ns}'
             sys.stdout.write('\r'+msg+'\n')
