@@ -68,7 +68,7 @@ def main():
             # Get values from drop down
             Fun = values['-DROP-DIST-'] # chosen distribution
             
-            X = getattr(cuqi.distribution,Fun)(mean=0, std=1) # creating cuqi.distribution object
+            X = getattr(cuqi_v2.distribution,Fun)(mean=0, std=1) # creating cuqi.distribution object
             Xs = X.sample # extracting samples
 
             # Update plot

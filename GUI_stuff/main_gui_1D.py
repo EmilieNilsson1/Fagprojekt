@@ -52,32 +52,35 @@ def main():
 
     # look into enable_events = True
     # Define the GUI layout
+    big_font = 'Courier 20 bold'
+    medium_font = 'Courier 16'
+    small_font = 'Helvetica 12'
     options_column = [
-        [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font='Helvetica 20')],
-        [sg.Text('Choose test signal', font = 'Helvetica 16')],
+        [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
+        [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
-        [sg.Text('Choose prior distribution', font = 'Helvetica 16')],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14'), 
-        sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = 'Helvetica 14')],
-        [sg.Text('Set prior parameters', font = 'Helvetica 16',key = 'PRIOR_TEXT')],
-        [place(sg.Text('Par1', font = 'Helvetica 12', key = '-PAR1-', visible = False)), 
+        [sg.Text('Choose prior distribution', font =medium_font)],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
+        sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
+        sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)],
+        [sg.Text('Set prior parameters', font =medium_font,key = 'PRIOR_TEXT')],
+        [place(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
         place(sg.T('0.1', key='-RIGHT1-', visible = False))],
-        [place(sg.Text('Par2', font = 'Helvetica 12', key = '-PAR2-', visible=False)), 
+        [place(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
         place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
-        [sg.Text('Sample size', font = 'Helvetica 12'), 
+        [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
-        [sg.Text('Confidence interval', font = 'Helvetica 12'), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
+        [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
         sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
-        [sg.Button('Update', size=(10, 1), font='Helvetica 14'),
-        sg.Button('Exit', size=(10, 1), font='Helvetica 14'),
-        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= 'Helvetica 14', enable_events = True)]
+        [sg.Button('Update', size=(10, 1), font=medium_font),
+        sg.Button('Exit', size=(10, 1), font=medium_font),
+        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= medium_font, enable_events = True)]
     ]
 
     plot_column = [
@@ -85,20 +88,11 @@ def main():
     ]
 
     # 1D layout:
-    tab1_layout = [
+    layout = [
         [sg.Column(options_column),
         sg.VSeperator(),
         sg.Column(plot_column),]
     ]
-
-    # 2D layout:
-    tab2_layout = [[sg.Text('This is inside tab 2')],
-               [sg.Input(key='-in2-')]]
-    
-    layout = [[sg.TabGroup([[sg.Tab('1D convolution', tab1_layout, key='Tab1', title_color = 'black'),
-                         sg.Tab('2D convolution', tab2_layout, key = 'Tab2')]],
-                       key='-TABS-', title_color='black',
-                       selected_title_color='white', tab_location='topleft', font = 'Helvetica 16')]]
 
     # Create the GUI and show it without the plot
     window = sg.Window('CUQIpy interactive demo', layout, finalize=True, resizable=True, icon='cookieIcon.ico' ).Finalize()
