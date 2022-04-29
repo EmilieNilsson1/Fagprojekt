@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from cuqi.diagnostics import Geweke
-from cuqi.geometry import _DefaultGeometry, Continuous2D
+from cuqi.geometry import _DefaultGeometry, Continuous2D, Image2D
 from copy import copy
 import arviz # Plotting tool
 
@@ -63,7 +63,11 @@ class CUQIarray(np.ndarray):
             vals = self.geometry.par2fun(self)
         else:
             vals = self
-        return type(self)(vals,is_par=False,geometry=self.geometry) #vals.view(np.ndarray)   
+
+        if isinstance(vals, np.ndarray):
+            return type(self)(vals,is_par=False,geometry=self.geometry) #vals.view(np.ndarray)
+        else: 
+            return vals  
 
     @property
     def parameters(self):
@@ -147,10 +151,13 @@ class Samples(object):
     shape : tuple
         Returns the shape of samples.
 
+    Ns : int
+        Returns the number of samples
+
     Methods
     ----------
     :meth:`plot`: Plots one or more samples.
-    :meth:`plot_ci`: Plots a confidence interval for the samples.
+    :meth:`plot_ci`: Plots a credibility interval for the samples.
     :meth:`plot_mean`: Plots the mean of the samples.
     :meth:`plot_std`: Plots the std of the samples.
     :meth:`plot_chain`: Plots all samples of one or more variables (MCMC chain).
@@ -165,6 +172,11 @@ class Samples(object):
     @property
     def shape(self):
         return self.samples.shape
+
+    @property
+    def Ns(self):
+        """Return number of samples"""
+        return self.samples.shape[-1]
 
     @property
     def geometry(self):
@@ -199,31 +211,63 @@ class Samples(object):
         # (the burn-in and thinned samples are lost)
         S = S.burnthin(100,2) 
         """
+        if Nb>=self.Ns:
+            raise ValueError(f"Number of burn-in {Nb} is greater than or equal number of samples {self.Ns}")
         new_samples = copy(self)
         new_samples.samples = self.samples[...,Nb::Nt]
         return new_samples
 
     def plot_mean(self,*args,**kwargs):
-        # Compute mean assuming samples are index in last dimension of nparray
-        mean = np.mean(self.samples,axis=-1)
+        """Plot pointwise mean of the samples
+
+        Positional and keyword arguments are passed to the underlying `self.geometry.plot` method.
+        See documentation of `self.geometry` for options.
+        """
+        mean = self.mean()
 
         # Plot mean according to geometry
-        return self.geometry.plot(mean,*args,**kwargs)
+        ax =  self.geometry.plot(mean, *args, **kwargs)
+        plt.title('Sample mean')
+        return ax
+
+    def plot_variance(self,*args,**kwargs):
+        """Plot pointwise variance of the samples
+
+        Positional and keyword arguments are passed to the underlying `self.geometry.plot` method.
+        See documentation of `self.geometry` for options.
+        """
+        variance = self.variance()
+
+        # Plot variance according to geometry
+        ax = self.geometry.plot(variance, *args, **kwargs)
+        plt.title('Sample variance')
+        return ax
 
     def mean(self):
-        #TODO: use this method in plot_mean 
-        return np.mean(self.samples,axis=-1)
+        """Compute mean of the samples"""
+        return np.mean(self.samples, axis=-1)
 
+    def variance(self):
+        """Compute pointwise variance of the samples"""
+        return np.var(self.samples, axis=-1)
 
     def plot_std(self,*args,**kwargs):
+        """Plot pointwise standard deviation of the samples
+
+        Positional and keyword arguments are passed to the underlying `self.geometry.plot` method.
+        See documentation of `self.geometry` for options.
+        """
+
         # Compute std assuming samples are index in last dimension of nparray
         std = np.std(self.samples,axis=-1)
 
         # Plot mean according to geometry
-        return self.geometry.plot(std,*args,**kwargs)
+        ax = self.geometry.plot(std, *args, **kwargs)
+        plt.title('Sample standard deviation')
+        return ax
 
     def plot(self,sample_indices=None,*args,**kwargs):
-        Ns = self.samples.shape[-1]
+        Ns = self.Ns
         Np = 5 # Number of samples to plot if Ns > 5
         
         if sample_indices is None:
@@ -233,7 +277,13 @@ class Samples(object):
         return self.geometry.plot(self.samples[:,sample_indices],*args,**kwargs)
 
 
-    def plot_chain(self,variable_indices,*args,**kwargs):
+    def plot_chain(self, variable_indices=None, *args, **kwargs):
+        dim = self.geometry.dim
+        Nv = 5 # Max number of variables to plot if none are chosen
+        # If no variables are given we randomly select some at random
+        if variable_indices is None:
+            if Nv<dim: print(f"Selecting {Nv} randomly chosen variables")
+            variable_indices = self._select_random_indices(Nv, dim)
         if 'label' in kwargs.keys():
             raise Exception("Argument 'label' cannot be passed by the user")
         variables = np.array(self.geometry.variables) #Convert to np array for better slicing
@@ -253,12 +303,12 @@ class Samples(object):
 
     def plot_ci(self,percent=95,exact=None,*args,plot_envelope_kwargs={},**kwargs):
         """
-        Plots the confidence interval for the samples according to the geometry.
+        Plots the credibility interval for the samples according to the geometry.
 
         Parameters
         ---------
         percent : int
-            The percent confidence to plot (i.e. 95, 99 etc.)
+            The percent credibility to plot (i.e. 95, 99 etc.)
         
         exact : ndarray, default None
             The exact value (for comparison)
@@ -282,7 +332,7 @@ class Samples(object):
         if "is_par"   in kwargs.keys(): pe_kwargs["is_par"]  =kwargs.get("is_par")
         if "plot_par" in kwargs.keys(): pe_kwargs["plot_par"]=kwargs.get("plot_par")   
 
-        if type(self.geometry) is Continuous2D:
+        if type(self.geometry) is Continuous2D or type(self.geometry) is Image2D:
             plt.figure()
             #fig.add_subplot(2,2,1)
             self.geometry.plot(mean, *args, **kwargs)
@@ -295,14 +345,14 @@ class Samples(object):
             #fig.add_subplot(2,2,2)
             plt.figure()
             self.geometry.plot(up_conf-lo_conf)
-            plt.title("Confidence interval (Upper minus lower)")
+            plt.title("Credibility interval (Upper minus lower)")
             plt.figure()
             self.geometry.plot(up_conf)
-            plt.title("Upper confidence interval limit")
+            plt.title("Upper credibility interval limit")
             #fig.add_subplot(2,2,4)
             plt.figure()
             self.geometry.plot(lo_conf)
-            plt.title("Lower confidence interval limit")
+            plt.title("Lower credibility interval limit")
         else:
             lci = self.geometry.plot_envelope(lo_conf, up_conf,color='dodgerblue',**pe_kwargs)
             
@@ -312,9 +362,9 @@ class Samples(object):
                     lex = exact.plot(*args,**kwargs)
                 else:
                     lex = self.geometry.plot(exact,*args,**kwargs)
-                plt.legend([lmn[0], lex[0], lci],["Mean","Exact","Confidence Interval"])
+                plt.legend([lmn[0], lex[0], lci],["Mean","Exact","Credibility Interval"])
             else:
-                plt.legend([lmn[0], lci],["Mean","Confidence Interval"])
+                plt.legend([lmn[0], lci],["Mean","Credibility Interval"])
 
     def diagnostics(self):
         # Geweke test
@@ -464,3 +514,74 @@ class Samples(object):
 
         return datadict
         
+    def compute_ess(self, **kwargs):
+        """ Compute effective sample size (ESS) of samples.
+        
+        Any remaining keyword arguments will be passed to the arviz computing tool.
+        See https://arviz-devs.github.io/arviz/api/generated/arviz.ess.html.
+
+        Returns
+        -------
+        Numpy array with effective sample size for each variable.
+        """
+        ESS_xarray = arviz.ess(self.to_arviz_inferencedata(), **kwargs)
+        ESS = np.empty(self.geometry.shape)
+        for i, (key, value) in enumerate(ESS_xarray.items()):
+            ESS[i] = value.to_numpy()
+        return ESS
+
+    def compute_rhat(self, chains, **kwargs):
+        """ Compute rhat value of samples given list of cuqi.samples.Samples objects (chains) to compare with.
+        
+        Here rhat values close to 1 indicates the chains have converged to the same distribution.
+        
+        Parameters
+        ----------
+        chains : list (or a single Samples object)
+            List of cuqi.samples.Samples objects each representing a single MCMC chain to compare with.
+            Each Samples object must have the same geometry as the original Samples object.
+
+        Any remaining keyword arguments will be passed to the arviz computing tool.
+        See https://arviz-devs.github.io/arviz/api/generated/arviz.rhat.html.
+
+        Returns
+        -------
+        Numpy array with rhat values for each variable.
+        """
+
+        # If single Samples object put into a list
+        if isinstance(chains, Samples):
+            chains = [chains]
+
+        if not isinstance(chains, list):
+            raise TypeError("Chains needs to be a list")
+
+        n_chains = len(chains)
+        for i in range(n_chains):
+            if self.geometry != chains[i].geometry:
+                raise TypeError(f"Geometry of chain {i} does not match Samples geometry.")
+
+        if len(self.samples.shape) != 2:
+            raise TypeError("Raw samples within each chain must have len(shape)==2, i.e. (variable, draws) structure.")
+        
+        # Get variable names from geometry
+        variables = np.array(self.geometry.variables) #Convert to np array for better slicing
+        variables = variables.flatten()
+
+        # Construct full samples for all chains
+        samples = np.empty((self.samples.shape[0], n_chains+1, self.samples.shape[1]))
+        samples[:,0,:] = self.samples
+        for i, chain in enumerate(chains):
+            samples[:,i+1,:] = chain.samples
+
+        # Construct inference data structure
+        datadict =  dict(zip(variables,samples))
+
+        # Compute rhat
+        RHAT_xarray = arviz.rhat(datadict, **kwargs)
+
+        # Convert to numpy array
+        RHAT = np.empty(self.geometry.shape)
+        for i, (key, value) in enumerate(RHAT_xarray.items()):
+            RHAT[i] = value.to_numpy()
+        return RHAT

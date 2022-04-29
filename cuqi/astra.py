@@ -89,7 +89,7 @@ class _astraCT2D(cuqi.model.LinearModel):
         astra.data2d.delete(id)
         out = volume.flatten(order='F')
         if type(y) is cuqi.samples.CUQIarray:
-            out = CUQIarray(out, geometry=self.domain_geometry)
+            out = cuqi.samples.CUQIarray(out, geometry=self.domain_geometry)
         return out
 
 
@@ -194,7 +194,7 @@ class ParBeamCT_2D(cuqi.problem.BayesianProblem):
 
     likelihood : cuqi.likelihood.Likelihood
         Likelihood function. 
-        (automatically computed from noise distribution)
+        (automatically computed from data distribution)
 
     exactSolution : ndarray
         Exact solution (ground truth)

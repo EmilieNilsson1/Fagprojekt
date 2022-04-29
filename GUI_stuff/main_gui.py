@@ -203,7 +203,7 @@ def main():
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG-']
-            TP = cuqi.testproblem.Deconvolution(phantom = sig, noise_std = n_std)
+            TP = cuqi.testproblem.Deconvolution1D(phantom = sig, noise_std = n_std)
             
             if Dist == "Gaussian": 
                 TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
