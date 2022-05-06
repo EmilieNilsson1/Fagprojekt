@@ -59,6 +59,7 @@ def main():
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn_2D-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
         [sg.Text('Choose prior distribution', font =medium_font)],
+        [sg.Combo(['GaussianCov','Laplace_diff'],key = '-DIST_2D-', default_value='GaussianCov')],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
@@ -155,7 +156,7 @@ def main():
     fig_agg5 = draw_figure(canvas5, fig5)
 
 
-    Dist = "Gaussian" # setting Gaussian as default
+   # Dist = values['-DIST_2D-'] # setting Gaussian as default
     while True:
 
         # Read current events and values from GUI
@@ -170,6 +171,7 @@ def main():
         window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
 
         # Select prior distribution
+        Dist = values['-DIST_2D-']
         # buttons change accordingly
         if event == '-GAUSSIAN-':
             Dist = "Gaussian"
@@ -245,9 +247,14 @@ def main():
             sig = values['-TESTSIG_2D-']
             TP = cuqi.testproblem.Deconvolution2D(phantom = sig, noise_std = n_std)
             
-            if Dist == "Gaussian": 
+            if Dist == "GaussianCov": 
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
-               TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
+                TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
+            
+            elif Dist == "Laplace_diff":
+                TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
+
+            
             
             # if Dist == "Laplace_diff":
             #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
@@ -260,19 +267,31 @@ def main():
             #     High = 0+par1
             #     TP.prior = getattr(cuqi.distribution, Dist)(low = Low, high = High)
                 
-            # try:
-            #     xs = TP.sample_posterior(sampsize) # Sample posterior
-            # except:
-            #     window['-FIGUP_2D-'].update(visible = True)
-            #     window['-FIGUP_2D-'].update(text_color = 'red')
-            #     window['-FIGUP_2D-'].update('Sampler not implemented')
-            # else:
-            #     window['-FIGUP_2D-'].update('Figure updated!')
-            #     window['-FIGUP_2D-'].update(text_color = 'white')
-            #     window['-FIGUP_2D-'].update(visible = True)
+            try:
+                xs = TP.sample_posterior(sampsize) # Sample posterior
+            except:
+                window['-FIGUP_2D-'].update(visible = True)
+                window['-FIGUP_2D-'].update(text_color = 'red')
+                window['-FIGUP_2D-'].update('Sampler not implemented')
+            else:
+                window['-FIGUP_2D-'].update('Figure updated!')
+                window['-FIGUP_2D-'].update(text_color = 'white')
+                window['-FIGUP_2D-'].update(visible = True)
     
                 # Update plot
                 # grid = np.linspace(0,128, 128)
+
+            fig1.clear()
+            plt.figure(1)
+            plt.subplot(221)
+            TP.exactSolution.plot()
+            plt.subplot(222)
+            TP.data.plot()
+            plt.subplot(223)
+            xs.plot_mean()
+            plt.subplot(224)
+            xs.plot_std()
+            fig_agg1.draw()
 
             fig2.clear()
             plt.figure(2)
@@ -283,6 +302,16 @@ def main():
             plt.figure(3)
             TP.data.plot()
             fig_agg3.draw()
+
+            fig4.clear()
+            plt.figure(4)
+            xs.plot_mean()
+            fig_agg4.draw()
+
+            fig5.clear()
+            plt.figure(5)
+            xs.plot_std()
+            fig_agg5.draw()
 
                 
                 # Print update in console
