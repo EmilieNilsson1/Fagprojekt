@@ -83,7 +83,8 @@ def main():
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
-        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= medium_font, enable_events = True)]
+        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= medium_font, enable_events = True)],
+        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT-')]
     ]
 
     plot_column = [
@@ -190,10 +191,6 @@ def main():
 
         # Clicked update button
         if event in ('Update', None):
-            try:
-                window['-FIGUP-'].update(visible = True)
-                window['-FIGUP-'].update('Loading...')
-            except: pass
 
             # Get values from input
             par1 = float(values['-SLIDER1-'])
@@ -206,15 +203,19 @@ def main():
             sig = values['-TESTSIG-']
             TP = cuqi.testproblem.Deconvolution1D(phantom = sig, noise_std = n_std)
             
-            if Dist == "Gaussian": 
-                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
+            if Dist == "Gaussian":
+                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1)
+
+            
             
             if Dist == "Laplace_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
-                
+                window['-OUTPUT-'].update(visible = True)
+
             if Dist == "Cauchy_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
-            
+                window['-OUTPUT-'].update(visible = True)
+
             if Dist == "Uniform":
                 Low = 0-par1
                 High = 0+par1
@@ -241,8 +242,9 @@ def main():
                 xs.plot_ci(conf) # Solution
                 fig_agg.draw()
                 
-                # Print update in console
-                print(" Figure updated!")
+                # Remove output window
+                window['-OUTPUT-'].update(visible=False)    
+            
 
         # Show true signal
         show_true = values['TRUE_SIGNAL']

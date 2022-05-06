@@ -284,12 +284,13 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
 
         return samples
 
     def _sampleMapCholesky(self, Ns, callback=None):
-        print(f"Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
+        print("Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
         # Start timing
         ti = time.time()
 
@@ -310,14 +311,15 @@ class BayesianProblem(object):
             x_s[:,s] = x_map.parameters + L@np.random.randn(n)
             # display iterations 
             if (s % 5e2) == 0:
-                print("\r",'Sample', s, '/', Ns, end="")
+                print('Sample', s, '/', Ns, end="\n")
             
             # Callback function
             if callback is not None:
                 callback(x_s[:,s], s)
 
-        print("\r",'Sample', s+1, '/', Ns)
-        print('Elapsed time:', time.time() - ti)
+        print('Sample', s+1, '/', Ns, '\n')
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return cuqi.samples.Samples(x_s,self.model.domain_geometry)
     
@@ -340,7 +342,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns,Nb); #ToDo: Make results class
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -357,7 +360,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns, Nb)
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
        
         return x_s
 
@@ -376,7 +380,8 @@ class BayesianProblem(object):
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns+Nb); # TODO. FIX burn-in for NUTS!
         x_s = x_s.burnthin(Nb)
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -393,7 +398,8 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our GUI
+        #print('Elapsed time:', time.time() - ti)
 
         return samples
 
