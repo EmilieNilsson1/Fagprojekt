@@ -80,7 +80,7 @@ def main():
         sg.T('1000', key='-RIGHT2-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
         sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True)],
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= medium_font, enable_events = True)]
@@ -141,6 +141,7 @@ def main():
             window['-PAR1-'].update('Prior std')
             window['-PAR2-'].update(visible = False) # removes buttons if other prior was chosen first
             window['-BCTYPE-'].update(visible = False)
+            window['-FIGUP-'].update(visible = False)
         elif event == '-LAPLACE-':
             Dist = "Laplace_diff"
             window['PRIOR_TEXT'].update('Set parameters for laplace distribution')
@@ -172,6 +173,7 @@ def main():
             window['-PAR2-'].update(visible = True)
             window['-PAR2-'].update('Boundary')
             window['-BCTYPE-'].update(visible = True)
+            window['-FIGUP-'].update('Might take a while')
         elif event == '-UNI-':
             Dist == 'Uniform'
             window['-UNI-'].update(button_color=(None, 'green')) #'white on green')
@@ -183,12 +185,15 @@ def main():
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
             window['-PAR1-'].update('Spread')
+            window['-FIGUP-'].update(visible = False)
 
 
         # Clicked update button
         if event in ('Update', None):
-            #window['-FIGUP-'].update(visible = True)
-            #window['-FIGUP-'].update('Loading...')
+            try:
+                window['-FIGUP-'].update(visible = True)
+                window['-FIGUP-'].update('Loading...')
+            except: pass
 
             # Get values from input
             par1 = float(values['-SLIDER1-'])
@@ -196,7 +201,6 @@ def main():
             sampsize = int(values['-SLIDER-SAMPLE-'])
             conf = int(values['-TEXT-CONF-'])
             n_std = float(values['-SLIDER-NOISE-'])
-            print(n_std)
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG-']
