@@ -123,13 +123,15 @@ class BayesianProblem(object):
     def ML(self):
         """Maximum Likelihood (ML) estimate"""
         # Print warning to user about the automatic solver selection
+        """ 
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print("!!! Automatic solver selection is experimental. !!!")
         print("!!!    Always validate the computed results.    !!!")
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print("")
         print("Using scipy.optimize.minimize on negative log-likelihood")
-        print("x0: random vector")
+        print("x0: random vector") """
+
         x0 = np.random.randn(self.model.domain_dim)
 
         if self._check_posterior(must_have_gradient=True):
@@ -162,11 +164,12 @@ class BayesianProblem(object):
 
         if disp:
             # Print warning to user about the automatic solver selection
+            """ 
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             print("!!! Automatic solver selection is experimental. !!!")
             print("!!!    Always validate the computed results.    !!!")
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            print("")
+            print("") """
 
         if self._check_posterior((Gaussian, GaussianCov), Gaussian, LinearModel, max_dim=config.MAX_DIM_INV):
             if disp: print(f"Using direct MAP of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
@@ -225,11 +228,12 @@ class BayesianProblem(object):
         """
 
         # Print warning to user about the automatic sampler selection
+        """ 
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print("!!! Automatic sampler selection is experimental. !!!")
         print("!!!    Always validate the computed results.     !!!")
         print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print("")
+        print("") """
 
         # For Gaussian small-scale we can use direct sampling
         if self._check_posterior((Gaussian, GaussianCov), (Gaussian, GaussianCov), LinearModel, config.MAX_DIM_INV) and not self._check_posterior(GMRF):
@@ -272,8 +276,8 @@ class BayesianProblem(object):
             samples.plot_ci(95)
 
     def _sampleLinearRTO(self,Ns, callback=None):
-        print("Using Linear_RTO sampler.")
-        print("burn-in: 20%")
+        # print("Using Linear_RTO sampler.")
+        # print("burn-in: 20%")
 
         # Start timing
         ti = time.time()
@@ -324,8 +328,8 @@ class BayesianProblem(object):
         return cuqi.samples.Samples(x_s,self.model.domain_geometry)
     
     def _sampleCWMH(self, Ns, callback=None):
-        print("Using Component-wise Metropolis-Hastings (CWMH) sampler (sample_adapt)")
-        print("burn-in: 20%, scale: 0.05, x0: 0.5 (vector)")
+        # print("Using Component-wise Metropolis-Hastings (CWMH) sampler (sample_adapt)")
+        # print("burn-in: 20%, scale: 0.05, x0: 0.5 (vector)")
 
         # Dimension
         n = self.prior.dim
@@ -348,8 +352,8 @@ class BayesianProblem(object):
         return x_s
 
     def _samplepCN(self, Ns, callback=None):
-        print("Using preconditioned Crank-Nicolson (pCN) sampler (sample_adapt)")
-        print("burn-in: 20%, scale: 0.02")
+        # print("Using preconditioned Crank-Nicolson (pCN) sampler (sample_adapt)")
+        # print("burn-in: 20%, scale: 0.02")
 
         scale = 0.02
         #x0 = np.zeros(n)
@@ -366,8 +370,8 @@ class BayesianProblem(object):
         return x_s
 
     def _sampleNUTS(self, Ns, callback=None):
-        print("Using No-U-Turn (NUTS) sampler")
-        print("burn-in: 20%")
+        # print("Using No-U-Turn (NUTS) sampler")
+        # print("burn-in: 20%")
 
         # MAP
         #print("Computing MAP ESTIMATE")
@@ -386,8 +390,8 @@ class BayesianProblem(object):
         return x_s
 
     def _sampleUnadjustedLaplaceApproximation(self, Ns, callback=None):
-        print("Using Unadjusted Laplace Approximation sampler")
-        print("burn-in: 20%")
+        # print("Using Unadjusted Laplace Approximation sampler")
+        # print("burn-in: 20%")
 
         # Start timing
         ti = time.time()
