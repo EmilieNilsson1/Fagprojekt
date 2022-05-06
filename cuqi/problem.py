@@ -284,7 +284,8 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
 
         return samples
 
@@ -317,7 +318,8 @@ class BayesianProblem(object):
                 callback(x_s[:,s], s)
 
         print('Sample', s+1, '/', Ns, '\n')
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return cuqi.samples.Samples(x_s,self.model.domain_geometry)
     
@@ -340,7 +342,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns,Nb); #ToDo: Make results class
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -357,7 +360,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns, Nb)
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
        
         return x_s
 
@@ -376,7 +380,8 @@ class BayesianProblem(object):
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns+Nb); # TODO. FIX burn-in for NUTS!
         x_s = x_s.burnthin(Nb)
-        print('Elapsed time:', time.time() - ti)
+           # we don't want this in our GUI
+        # print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -393,7 +398,8 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our GUI
+        #print('Elapsed time:', time.time() - ti)
 
         return samples
 

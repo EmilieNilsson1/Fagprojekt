@@ -204,7 +204,7 @@ def main():
             sig = values['-TESTSIG-']
             TP = cuqi.testproblem.Deconvolution1D(phantom = sig, noise_std = n_std)
             
-            if Dist == "Gaussian": 
+            if Dist == "Gaussian":
                 TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1)
 
             
@@ -216,7 +216,7 @@ def main():
             if Dist == "Cauchy_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
                 window['-OUTPUT-'].update(visible = True)
-                
+
             if Dist == "Uniform":
                 Low = 0-par1
                 High = 0+par1
