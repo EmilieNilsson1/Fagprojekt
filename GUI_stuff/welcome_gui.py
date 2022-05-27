@@ -55,9 +55,16 @@ def main():
 
     # create simple layout
     layout = [
-        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(60, 5), justification='center', font=big_font),
-        sg.Button('Link', enable_events = True, size=(10, 1), font=medium_font),
-        sg.Button('Exit', size=(10, 1), font=medium_font)]
+        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 3), justification='center', font=big_font)],
+        [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
+        [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
+        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted and added noise to simulate the measurement of real life data', font=small_font)],
+        [sg.Text('From this deconvuluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
+        [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
+        [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
+        [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
+        sg.Button('CUQI', enable_events = True, size=(10, 1), font=medium_font)],
+        [sg.Button('Exit', size=(10, 1), font=medium_font)]
     ]
 
     # Create the GUI window
@@ -76,16 +83,6 @@ def main():
         if event in ('Link', None):
             os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
         
-    # Extract canvas element to attach plot to
-
-    # canvas_elem = window['-CANVAS-']
-    # canvas = canvas_elem.TKCanvas
-
-    # Draw the initial figure in the window
-
-    # fig = plt.figure(figsize = (6,6))
-    # fig_agg = draw_figure(canvas, fig)
-
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
     main() #Runs main method
