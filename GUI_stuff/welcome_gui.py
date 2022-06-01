@@ -64,6 +64,7 @@ def main():
         [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
         [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
         sg.Button('CUQI', enable_events = True, size=(10, 1), font=medium_font)],
+        [sg.Image("gauss.png",size=(300,300))],
         [sg.Button('Exit', size=(10, 1), font=medium_font)]
     ]
 
