@@ -9,6 +9,8 @@ from cuqi.geometry import _DefaultGeometry
 from cuqi.utilities import ProblemInfo
 from cuqi.pde import SteadyStateLinearPDE
 
+from copy import copy
+
 class BayesianProblem(object):
     """Representation of a Bayesian inverse problem (posterior) defined by a likelihood and prior.
     
@@ -159,6 +161,11 @@ class BayesianProblem(object):
 
         disp : bool
             display info messages? (True or False).
+
+        Returns
+        -------
+        x_MAP : CUQIarray
+            MAP estimate of the posterior. Solver info is stored in `.info` attribute.
         
         """
 
@@ -183,28 +190,30 @@ class BayesianProblem(object):
             rhs = b-A@x0
             sysm = A@Cx@A.T+Ce
             map_estimate = x0 + Cx@(A.T@np.linalg.solve(sysm,rhs))
-            return cuqi.samples.CUQIarray(map_estimate, geometry=self.model.domain_geometry)
+            map_estimate = cuqi.samples.CUQIarray(map_estimate, geometry=self.model.domain_geometry)
+            map_estimate.info = {"solver": "direct"}
+            return map_estimate
 
         # If no specific implementation exists, use numerical optimization.
-        if disp: print("Using scipy.optimize.minimize on negative logpdf of posterior")
-        if disp: print("x0: random vector")
-        x0 = np.random.randn(self.model.domain_dim)
+        if disp: print("Using scipy.optimize.fmin_l_bfgs_b on negative logpdf of posterior")
+        if disp: print("x0: ones vector")
+        x0 = np.ones(self.model.domain_dim)
         def posterior_logpdf(x):
             return -self.posterior.logpdf(x)
 
         if self._check_posterior(must_have_gradient=True):
             if disp: print("Optimizing with exact gradients")
             gradfunc = lambda x: -self.posterior.gradient(x)
-            solver = cuqi.solver.minimize(posterior_logpdf, 
-                                            x0,
-                                            gradfunc=gradfunc)
+            solver = cuqi.solver.L_BFGS_B(posterior_logpdf, x0, gradfunc=gradfunc)
             x_BFGS, info_BFGS = solver.solve()
         else:
             if disp: print("Optimizing with approximate gradients.")      
-            solver = cuqi.solver.minimize(posterior_logpdf, 
-                                            x0)
+            solver = cuqi.solver.L_BFGS_B(posterior_logpdf, x0)
             x_BFGS, info_BFGS = solver.solve()
-        return x_BFGS, info_BFGS
+        x_MAP = cuqi.samples.CUQIarray(x_BFGS, geometry=self.model.domain_geometry)
+        x_MAP.info = info_BFGS
+        x_MAP.info["solver"] = "L-BFGS-B"
+        return x_MAP
 
     def sample_posterior(self, Ns, callback=None) -> cuqi.samples.Samples:
         """Sample the posterior. Sampler choice and tuning is handled automatically.
@@ -263,6 +272,31 @@ class BayesianProblem(object):
         else:
             raise NotImplementedError(f"Automatic sampler choice is not implemented for model: {type(self.model)}, likelihood: {type(self.likelihood.distribution)} and prior: {type(self.prior)} and dim {self.prior.dim}. Manual sampler choice can be done via the 'sampler' module. Posterior distribution can be extracted via '.posterior' of any testproblem (BayesianProblem).")
 
+    def sample_prior(self, Ns, callback=None) -> cuqi.samples.Samples:
+        """ Sample the prior distribution. Sampler choice and tuning is handled automatically. """
+
+        # Try sampling prior directly
+        try:
+            return self.prior.sample(Ns)
+        except NotImplementedError:
+            pass
+
+        # If no direct method exists redefine posterior to one with a constant likelihood and sample from posterior
+        print("Using sampler module to sample prior.")
+        print("Make sure enough samples are drawn for convergence.")
+        print("")
+
+        # Create a copy of self
+        prior_problem = copy(self)
+
+        # Set likelihood to constant
+        model = cuqi.model.LinearModel(lambda x: 0*x, lambda y: 0*y, self.model.range_geometry, self.model.domain_geometry)
+        likelihood = cuqi.distribution.GaussianCov(model, 1).to_likelihood(np.zeros(self.model.range_dim)) # p(y|x)=constant
+        prior_problem.likelihood = likelihood
+
+        # Now sample prior problem
+        return prior_problem.sample_posterior(Ns, callback)
+
     def UQ(self, exact=None):
         print("Computing 5000 samples")
         samples = self.sample_posterior(5000)
@@ -288,13 +322,12 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-           # we don't want this in our GUI
-        # print('Elapsed time:', time.time() - ti)
+        print('Elapsed time:', time.time() - ti)
 
         return samples
 
     def _sampleMapCholesky(self, Ns, callback=None):
-        print("Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
+        print(f"Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
         # Start timing
         ti = time.time()
 
@@ -315,15 +348,14 @@ class BayesianProblem(object):
             x_s[:,s] = x_map.parameters + L@np.random.randn(n)
             # display iterations 
             if (s % 5e2) == 0:
-                print('Sample', s, '/', Ns, end="\n")
+                print("\r",'Sample', s, '/', Ns, end="")
             
             # Callback function
             if callback is not None:
                 callback(x_s[:,s], s)
 
-        print('Sample', s+1, '/', Ns, '\n')
-           # we don't want this in our GUI
-        # print('Elapsed time:', time.time() - ti)
+        print("\r",'Sample', s+1, '/', Ns)
+        print('Elapsed time:', time.time() - ti)
         
         return cuqi.samples.Samples(x_s,self.model.domain_geometry)
     
@@ -346,8 +378,7 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns,Nb); #ToDo: Make results class
-           # we don't want this in our GUI
-        # print('Elapsed time:', time.time() - ti)
+        print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -364,8 +395,7 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns, Nb)
-           # we don't want this in our GUI
-        # print('Elapsed time:', time.time() - ti)
+        print('Elapsed time:', time.time() - ti)
        
         return x_s
 
@@ -382,10 +412,8 @@ class BayesianProblem(object):
         # Run sampler
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
-        x_s = MCMC.sample_adapt(Ns+Nb); # TODO. FIX burn-in for NUTS!
-        x_s = x_s.burnthin(Nb)
-           # we don't want this in our GUI
-        # print('Elapsed time:', time.time() - ti)
+        x_s = MCMC.sample_adapt(Ns,Nb)
+        print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -402,8 +430,7 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        # we don't want this in our GUI
-        #print('Elapsed time:', time.time() - ti)
+        print('Elapsed time:', time.time() - ti)
 
         return samples
 
