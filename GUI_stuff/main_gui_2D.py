@@ -358,7 +358,6 @@ def main():
              
 
         if values['Uncer']:
-            print('hej')
             try:
                 plt.figure(1)
                 axs[1,0].axis("off")
