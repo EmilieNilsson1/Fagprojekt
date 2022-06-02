@@ -55,11 +55,11 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite'],key = '-TESTSIG_2D-' , default_value='satellite')],
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn_2D-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
         [sg.Text('Choose prior distribution', font =medium_font)],
-        [sg.Combo(['GaussianCov','Laplace_diff'],key = '-DIST_2D-', default_value='GaussianCov')],
+        [sg.Combo(['GaussianCov','Laplace_diff'],key = '-DIST_2D-', default_value='GaussianCov'), sg.Combo([0,1,2],default_value = 0, key = 'ORDER'), sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h')], 
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
@@ -75,7 +75,7 @@ def main():
         sg.T('1000', key='-RIGHT2_2D-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF_2D-', size =(10,10), default_text=90),
         sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL_2D', enable_events = True)],
+        [sg.Checkbox('Show uncertainty', default=False, key='Uncer', enable_events = True)],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)]
@@ -245,7 +245,8 @@ def main():
             sampsize = int(values['-SLIDER-SAMPLE_2D-'])
             conf = int(values['-TEXT-CONF_2D-'])
             n_std = float(values['-SLIDER-NOISE_2D-'])
-            print(n_std)
+            order = int(values['ORDER'])
+            alpha = float(values['ALPHA'])
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG_2D-']
@@ -254,15 +255,15 @@ def main():
             if Dist == "GaussianCov": 
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
                 #TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
-                TP.prior = cuqi.distribution.GMRF(np.zeros(TP.model.domain_dim), 1, order = 1, physical_dim=2)
+                TP.prior = cuqi.distribution.GMRF(np.zeros(TP.model.domain_dim), alpha, order = order, physical_dim=2)
             
-            elif Dist == "Laplace_diff":
-                TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
+            #elif Dist == "Laplace_diff":
+            #    TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
 
             
             
-            # if Dist == "Laplace_diff":
-            #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+            if Dist == "Laplace_diff":
+                 TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(TP.model.domain_dim), scale = par1, bc_type = par2, physical_dim = 2)
                 
             # if Dist == "Cauchy_diff":
             #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
@@ -287,6 +288,10 @@ def main():
                 # grid = np.linspace(0,128, 128)
 
             #fig1.clear()
+            std = np.reshape(np.std(xs.samples,axis=-1),(-1,128))
+            RED = np.zeros((128,128))
+            std_stand = std/np.max(std)
+
             axs[0,0].clear()
             axs[0,1].clear()
             axs[1,0].clear()
@@ -308,6 +313,7 @@ def main():
 
             axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, 128)), cmap = 'gray')
             axs[1,1].set_title('Uncertainty')
+            
             fig_agg1.draw()
 
             fig2.clear()
@@ -338,6 +344,34 @@ def main():
                 # Print update in console
             print(" Figure updated!")
 
+        if values['Uncer']:
+            print('hej')
+            try:
+                plt.figure(1)
+                axs[1,0].axis("off")
+                axs[1,0].imshow(RED,cmap='autumn', alpha = std_stand)
+                fig_agg1.draw()
+
+                plt.figure(4)
+                plt.axis("off")
+                plt.imshow(RED,cmap='autumn', alpha = std_stand)
+                fig_agg4.draw()
+            except: pass
+        else:
+            try:
+                plt.figure(1)
+                axs[1,0].clear()
+                axs[1,0].axis("off")
+                axs[1,0].imshow(np.reshape(xs.mean(), (-1, 128)), cmap = 'gray')
+                fig_agg1.draw()
+
+                fig4.clear()
+                plt.figure(4)
+                xs.plot_mean()
+                plt.axis("off")
+                fig_agg4.draw()
+            except: pass
+        
         # Show true signal
         # # show_true = values['TRUE_SIGNAL_2D']
         # # if show_true:
