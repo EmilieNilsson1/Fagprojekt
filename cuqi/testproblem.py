@@ -951,12 +951,13 @@ class Deconvolution2D(BayesianProblem):
         | 'Mirror' - Mirrored boundary
         | 'Nearest' - Replicates last element of boundary
         
-    phantom : string
+    phantom : string or ndarray
         | The phantom (sharp image) that is convolved.
-        | 'astronaut' - a photo of an astronaut.
-        | 'camera' - a photo of a man with a camera.
-        | 'cat' - a photo of a cat.
-        | 'satellite' - a photo of a satellite.
+        | If a string name must match a phantom in cuqi.data library.
+        | The string is lowercased and any hyphens are replaced 
+        | with underscores to match a method name in cuqi.data library.
+        | If a ndarray is given, it is used as the sharp image.
+        | A vector is reshaped to a square matrix.
 
     noise_type : string
         | The type of noise
@@ -1058,22 +1059,18 @@ class Deconvolution2D(BayesianProblem):
                 N = int(round(np.sqrt(len(phantom))))
                 phantom = phantom.reshape(N,N)
             phantom = cuqi.data.imresize(phantom, dim) # Resize phantom (if wrong size)
-            x_exact2D = phantom
-        # If phantom is string its a specific case
+            x_exact = phantom
         elif isinstance(phantom, str):
-            if phantom.lower() == "satellite":
-                x_exact2D = cuqi.data.satellite(size=dim)
-            elif phantom.lower() == "cat":
-                x_exact2D = cuqi.data.cat(size=dim)
-            elif phantom.lower() == "camera":
-                x_exact2D = cuqi.data.camera(size=dim)
-            elif phantom.lower() == "astronaut":
-                x_exact2D = cuqi.data.astronaut(size=dim)
+            # lowercase and replace hyphens with underscores to match library method names
+            phantom = phantom.lower().replace("-", "_") 
+            if hasattr(cuqi.data, phantom):
+                x_exact = getattr(cuqi.data, phantom)(size=model.domain_geometry.shape[0])
+            else:
+                raise ValueError("Phantom not found in cuqi.data phantom library.")
         else:
-            raise TypeError("Unknown phantom type.")
-
-        x_exact = x_exact2D.flatten()
-        x_exact = CUQIarray(x_exact, is_par=True, geometry=domain_geometry)
+            raise ValueError("Phantom must be a string or ndarray. See string options in cuqi.data.")
+        
+        x_exact = cuqi.samples.CUQIarray(x_exact.flatten(), is_par=True, geometry=model.domain_geometry)
 
         # Generate exact data (blurred)
         b_exact = model @ x_exact
@@ -1186,3 +1183,55 @@ def _DefocusPSF(dim, R):
     PSF = PSF / PSF.sum()
 
     return PSF, center.astype(int)
+
+
+#=============================================================================
+class WangCubic(BayesianProblem):
+    """ Two parameters and one observation cubic test problem.
+    
+    Parameters
+    ------------
+    noise_std : scalar
+        Standard deviation of the noise
+
+    prior : cuqi.distribution.Distribution
+        Distribution of the prior
+    
+    data : scalar
+        Observed data
+    
+    Notes
+    -----
+    Based on Section 3.3.2 in Wang (2015):
+    Z. Wang, "An Optimization Based Algorithm for Bayesian Inference". Master thesis. MIT. 2015  
+    https://dspace.mit.edu/bitstream/handle/1721.1/98815/921147308-MIT.pdf?sequence=1&isAllowed=y
+
+    """
+    def __init__(self, noise_std=1, prior=None, data=None):
+        # forward model and gradient
+        def forward(x):
+            return 10*x[1] - 10*x[0]**3 + 5*x[0]**2 + 6*x[0]
+        def gradient(direction, x):
+            # Jacobian.T @ direction
+            return np.vstack([-30*x[0]**2 + 10*x[0] + 6, 10]) @ direction
+        model = cuqi.model.Model(forward, range_geometry=1, domain_geometry=2, gradient=gradient)
+
+        # define prior
+        if prior is None:
+            prior = cuqi.distribution.Gaussian(np.array([1, 0]), 1)
+
+        # data
+        if data is None:
+            data = 1
+
+        # data distribution is Gaussian
+        data_dist = cuqi.distribution.Gaussian(model, noise_std)
+
+        # Define Gaussian likelihood
+        likelihood = data_dist.to_likelihood(data)
+        super().__init__(likelihood, prior)
+
+        # Store exact values
+        self.exactSolution = None
+        self.exactData = None
+        self.infoString = "Noise type: Additive {} with std: {}".format('Gaussian', noise_std)
