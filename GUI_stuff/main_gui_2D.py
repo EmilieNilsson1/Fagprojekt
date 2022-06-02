@@ -140,7 +140,7 @@ def main():
     canvas5 = canvas_elem5.TKCanvas
 
     # Draw the initial figures in the window
-    fig1 = plt.figure(1,figsize = (6,6))
+    fig1, axs = plt.subplots(nrows = 2, ncols = 2,figsize = (6,6))
     fig_agg1 = draw_figure(canvas1, fig1)
 
     fig2 = plt.figure(2,figsize = (6,6))
@@ -281,16 +281,24 @@ def main():
                 # Update plot
                 # grid = np.linspace(0,128, 128)
 
-            fig1.clear()
+            #fig1.clear()
+            axs[0,0].clear()
+            axs[0,1].clear()
+            axs[1,0].clear()
+            axs[1,1].clear()
+
             plt.figure(1)
-            plt.subplot(221)
-            TP.exactSolution.plot()
-            plt.subplot(222)
-            TP.data.plot()
-            plt.subplot(223)
-            xs.plot_mean()
-            plt.subplot(224)
-            xs.plot_std()
+            axs[0,0].imshow(np.reshape(TP.exactSolution,(-1,128)), cmap='gray')
+            axs[0,0].set_title('exact')
+
+            axs[0,1].imshow(np.reshape(TP.data, (-1, 128)), cmap = 'gray')
+            axs[0,1].set_title('data')
+
+            axs[1,0].imshow(np.reshape(xs.mean(), (-1, 128)), cmap = 'gray')
+            axs[1,0].set_title('mean')
+
+            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, 128)), cmap = 'gray')
+            axs[1,1].set_title('std')
             fig_agg1.draw()
 
             fig2.clear()
