@@ -21,6 +21,9 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
 import cuqi
 
+file_types = [("JPEG (*.jpg)", "*.jpg"),("PNG (*.png)", "*.png"),
+              ("All files (*.*)", "*.*")]
+
 # Convenience method to draw figure
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -55,7 +58,8 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite')],
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains','Own Picture'],key = '-TESTSIG_2D-' , default_value='satellite')],
+        [sg.Text("Choose a file: "), sg.Input(key="-FILE-"), sg.FileBrowse(file_types=file_types)],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
@@ -255,8 +259,16 @@ def main():
             alpha = float(values['ALPHA'])
 
             # Define and compute posterior to Deconvolution problem
-            sig = values['-TESTSIG_2D-']
-            TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
+            if values['-TESTSIG_2D-'] == "Own Picture":
+                filename = values["-FILE-"]
+                if os.path.exists(filename):
+                    image = Image.open(values["-FILE-"]).convert('RGB')
+                # if values[0] == True:
+                    image = image.resize((sz,sz))
+                    TP = cuqi.testproblem.Deconvolution2D(phantom = cuqi.data.rgb2gray(image), noise_std = n_std)
+            else:
+                sig = values['-TESTSIG_2D-']
+                TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
             
             if Dist == "GaussianCov": 
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
