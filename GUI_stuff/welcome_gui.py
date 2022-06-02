@@ -11,6 +11,7 @@ from PIL import Image
 import os
 import sys
 import inspect
+import webbrowser
 
 # Add PySimpeGUI
 import PySimpleGUI as sg
@@ -81,7 +82,7 @@ def main():
         if event in ('Exit', None):
             exit()
         
-        if event in ('Link', None):
+        if event in ('CUQI', None):
             os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
         
 if __name__ == '__main__':
