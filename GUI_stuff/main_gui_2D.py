@@ -81,7 +81,8 @@ def main():
         [sg.Checkbox('Show uncertainty', default=False, key='Uncer', enable_events = True)],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
-        sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)]
+        sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
+        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
     ]
 
     # 2D plot tabs
@@ -261,6 +262,7 @@ def main():
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
                 #TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
                 TP.prior = cuqi.distribution.GMRF(np.zeros(TP.model.domain_dim), alpha, order = order, physical_dim=2)
+                window['-OUTPUT_2D-'].update(visible = True)
             
             #elif Dist == "Laplace_diff":
             #    TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
@@ -269,6 +271,7 @@ def main():
             
             if Dist == "Laplace_diff":
                  TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(TP.model.domain_dim), scale = par1, bc_type = par2, physical_dim = 2)
+                 window['-OUTPUT_2D-'].update(visible = True)
                 
             # if Dist == "Cauchy_diff":
             #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
@@ -288,13 +291,16 @@ def main():
                 window['-FIGUP_2D-'].update('Figure updated!')
                 window['-FIGUP_2D-'].update(text_color = 'white')
                 window['-FIGUP_2D-'].update(visible = True)
+
+                # Remove output window
+                window['-OUTPUT_2D-'].update(visible=False)
     
                 # Update plot
                 # grid = np.linspace(0,128, 128)
 
             #fig1.clear()
             std = np.reshape(np.std(xs.samples,axis=-1),(-1,sz))
-            RED = np.zeros(TP.model.domain_dim)
+            RED = np.zeros((sz,sz))
             std_stand = std/np.max(std)
 
             axs[0,0].clear()
@@ -348,6 +354,8 @@ def main():
                 
                 # Print update in console
             print(" Figure updated!")
+
+             
 
         if values['Uncer']:
             print('hej')
