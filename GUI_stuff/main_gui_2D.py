@@ -65,13 +65,14 @@ def main():
         sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn_2D-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
-        [sg.Text('Choose prior distribution', font =medium_font)],
-        [sg.Combo(['GaussianCov','Laplace_diff'],key = '-DIST_2D-', default_value='GaussianCov'), sg.Combo([0,1,2],default_value = 0, key = 'ORDER'), sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h')], 
+        [sg.Text('Choose prior distribution', font =medium_font)], 
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)],
-        [sg.Text('Set prior parameters', font =medium_font,key = 'PRIOR_TEXT_2D')],
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
+        #[sg.Combo(['GaussianCov','Laplace_diff'],key = '-DIST_2D-', default_value='GaussianCov')],
+        [sg.Text('Set prior parameters', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
+        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT')),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER'))], 
+        [place(sg.Text('Alpha',key = 'ALPHA_TEXT')),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h'))],
         [place(sg.Text('Par1', font = small_font, key = '-PAR1_2D-', visible = False)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = False, size = (20,10))), 
         place(sg.T('0.1', key='-RIGHT1_2D-', visible = False))],
@@ -184,16 +185,19 @@ def main():
         window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
 
         # Select prior distribution
-        Dist = values['-DIST_2D-']
+        #Dist = values['-DIST_2D-']
         # buttons change accordingly
-        if event == '-GAUSSIAN-':
-            Dist = "Gaussian"
+        if event == '-GAUSSIAN_2D-':
+            Dist = "GaussianCov"
             window['PRIOR_TEXT_2D'].update('Set parameters for gaussian distribution')
+            window['ORDER_TEXT'].update(visible=True)
+            window['ALPHA_TEXT'].update(visible=True)  
+            window['ORDER'].update(visible=True)
+            window['ALPHA'].update(visible=True)
             #window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
             window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
             window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-            window['-UNI_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-PAR1_2D-'].update(visible = True)
             window['-SLIDER1_2D-'].update(visible=True)
             window['-RIGHT1_2D-'].update(visible=True)
@@ -201,13 +205,16 @@ def main():
             window['-PAR2_2D-'].update(visible = False) # removes buttons if other prior was chosen first
             window['-BCTYPE_2D-'].update(visible = False)
         elif event == '-LAPLACE_2D-':
+            window['ORDER'].update(visible=False)
+            window['ALPHA'].update(visible=False)
+            window['ORDER_TEXT'].update(visible=False)
+            window['ALPHA_TEXT'].update(visible=False)  
             Dist = "Laplace_diff"
             window['PRIOR_TEXT_2D'].update('Set parameters for laplace distribution')
             #window['-LAPLACE-'].update(button_color='white on green')
             window['-LAPLACE_2D-'].update(button_color=(None,'green'))
             window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-            window['-UNI_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-PAR1_2D-'].update(visible = True)
             window['-SLIDER1_2D-'].update(visible=True)
             window['-RIGHT1_2D-'].update(visible=True)
@@ -219,10 +226,13 @@ def main():
             window['-FIGUP_2D-'].update('Might take a while')
         elif event == '-CAUCHY_2D-':
             Dist = "Cauchy_diff"
+            window['ORDER'].update(visible=False)
+            window['ALPHA'].update(visible=False)
+            window['ORDER_TEXT'].update(visible=False)
+            window['ALPHA_TEXT'].update(visible=False)  
             window['PRIOR_TEXT_2D'].update('Set parameters for cauchy distribution')
             window['-CAUCHY_2D-'].update(button_color=(None, 'green')) #'white on green')
             window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-            window['-UNI_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-PAR1_2D-'].update(visible = True)
             window['-SLIDER1_2D-'].update(visible=True)
@@ -231,17 +241,6 @@ def main():
             window['-PAR2_2D-'].update(visible = True)
             window['-PAR2_2D-'].update('Boundary')
             window['-BCTYPE_2D-'].update(visible = True)
-        elif event == '-UNI_2D-':
-            Dist == 'Uniform'
-            window['-UNI_2D-'].update(button_color=(None, 'green')) #'white on green')
-            window['PRIOR_TEXT_2D'].update('Set parameters for uniform distribution')
-            window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-            window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
-            window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-            window['-PAR1_2D-'].update(visible = True)
-            window['-SLIDER1_2D-'].update(visible=True)
-            window['-RIGHT1_2D-'].update(visible=True)
-            window['-PAR1_2D-'].update('Spread')
             
     # Clicked update button
         if event in ('Update', None):
@@ -287,11 +286,6 @@ def main():
                 
             # if Dist == "Cauchy_diff":
             #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
-            
-            # if Dist == "Uniform":
-            #     Low = 0-par1
-            #     High = 0+par1
-            #     TP.prior = getattr(cuqi.distribution, Dist)(low = Low, high = High)
                 
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
