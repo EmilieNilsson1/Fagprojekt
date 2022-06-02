@@ -56,6 +56,9 @@ def main():
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite')],
+        [sg.Text('Image size:', font = small_font), 
+        sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
+        sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn_2D-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
         [sg.Text('Choose prior distribution', font =medium_font)],
@@ -173,6 +176,7 @@ def main():
         window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-']) # updates slider values
         window.Element('-RIGHT2_2D-').update(int(values['-SLIDER-SAMPLE_2D-'])) 
         window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
+        window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
 
         # Select prior distribution
         Dist = values['-DIST_2D-']
@@ -240,6 +244,7 @@ def main():
             #window['-FIGUP-'].update('Loading...')
 
             # Get values from input
+            sz = int(values['-SLIDER-SIZE_2D-'])
             par1 = float(values['-SLIDER1_2D-'])
             par2 = values['-BCTYPE_2D-']
             sampsize = int(values['-SLIDER-SAMPLE_2D-'])
@@ -250,7 +255,7 @@ def main():
 
             # Define and compute posterior to Deconvolution problem
             sig = values['-TESTSIG_2D-']
-            TP = cuqi.testproblem.Deconvolution2D(phantom = sig, noise_std = n_std)
+            TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
             
             if Dist == "GaussianCov": 
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
@@ -288,8 +293,8 @@ def main():
                 # grid = np.linspace(0,128, 128)
 
             #fig1.clear()
-            std = np.reshape(np.std(xs.samples,axis=-1),(-1,128))
-            RED = np.zeros((128,128))
+            std = np.reshape(np.std(xs.samples,axis=-1),(-1,sz))
+            RED = np.zeros(TP.model.domain_dim)
             std_stand = std/np.max(std)
 
             axs[0,0].clear()
@@ -302,16 +307,16 @@ def main():
             axs[1,1].axis('off')
 
             plt.figure(1)
-            axs[0,0].imshow(np.reshape(TP.exactSolution,(-1,128)), cmap='gray')
+            axs[0,0].imshow(np.reshape(TP.exactSolution,(-1,sz)), cmap='gray')
             axs[0,0].set_title('True image')
 
-            axs[0,1].imshow(np.reshape(TP.data, (-1, 128)), cmap = 'gray')
+            axs[0,1].imshow(np.reshape(TP.data, (-1, sz)), cmap = 'gray')
             axs[0,1].set_title('Blurred image')
 
-            axs[1,0].imshow(np.reshape(xs.mean(), (-1, 128)), cmap = 'gray')
+            axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
             axs[1,0].set_title('Reconstructed image')
 
-            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, 128)), cmap = 'gray')
+            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)), cmap = 'gray')
             axs[1,1].set_title('Uncertainty')
             
             fig_agg1.draw()
@@ -362,7 +367,7 @@ def main():
                 plt.figure(1)
                 axs[1,0].clear()
                 axs[1,0].axis("off")
-                axs[1,0].imshow(np.reshape(xs.mean(), (-1, 128)), cmap = 'gray')
+                axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
                 fig_agg1.draw()
 
                 fig4.clear()
