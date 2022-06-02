@@ -11,6 +11,55 @@ def satellite(size=None):
         img = imresize(img, size) 
     return img
 
+def smooth(size=None):
+    """Smooth picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/smooth.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
+
+def binary(size=None):
+    """Binary picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/binary.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
+def fourphases(size=None):
+    """Four phases picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/fourphases.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
+def ppower(size=None):
+    """ppower picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/ppower.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
+def threephases(size=None):
+    """threephases picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/threephases.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
+def threephasessmooth(size=None):
+    """threephases picture."""
+    stream = pkg_resources.resource_stream(__name__, 'data/threephasessmooth.mat')
+    img= spio.loadmat(stream)['im']
+    if size:
+        img = imresize(img, size) 
+    return img
+
 def astronaut(size=None, grayscale=True):
     """Color image of the astronaut Eileen Collins.
 
