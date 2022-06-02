@@ -83,7 +83,7 @@ def main():
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
-        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'red', font= medium_font, enable_events = True)],
+        sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'white', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT-')]
     ]
 
@@ -174,6 +174,7 @@ def main():
             window['-PAR2-'].update(visible = True)
             window['-PAR2-'].update('Boundary')
             window['-BCTYPE-'].update(visible = True)
+            window['-FIGUP-'].update(visible = True)
             window['-FIGUP-'].update('Might take a while')
         elif event == '-UNI-':
             Dist == 'Uniform'
