@@ -179,7 +179,7 @@ class BayesianProblem(object):
             print("") """
 
         if self._check_posterior((Gaussian, GaussianCov), Gaussian, LinearModel, max_dim=config.MAX_DIM_INV):
-            if disp: print(f"Using direct MAP of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
+            #if disp: print(f"Using direct MAP of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
             b  = self.data
             A  = self.model.get_matrix()
             Ce = self.likelihood.distribution.Sigma
@@ -195,7 +195,7 @@ class BayesianProblem(object):
             return map_estimate
 
         # If no specific implementation exists, use numerical optimization.
-        if disp: print("Using scipy.optimize.fmin_l_bfgs_b on negative logpdf of posterior")
+        #if disp: print("Using scipy.optimize.fmin_l_bfgs_b on negative logpdf of posterior")
         if disp: print("x0: ones vector")
         x0 = np.ones(self.model.domain_dim)
         def posterior_logpdf(x):
@@ -282,9 +282,9 @@ class BayesianProblem(object):
             pass
 
         # If no direct method exists redefine posterior to one with a constant likelihood and sample from posterior
-        print("Using sampler module to sample prior.")
-        print("Make sure enough samples are drawn for convergence.")
-        print("")
+        #print("Using sampler module to sample prior.")
+        #print("Make sure enough samples are drawn for convergence.")
+        #print("")
 
         # Create a copy of self
         prior_problem = copy(self)
@@ -322,12 +322,13 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our gui
+        #print('Elapsed time:', time.time() - ti)
 
         return samples
 
     def _sampleMapCholesky(self, Ns, callback=None):
-        print(f"Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
+        #print(f"Using direct sampling of Gaussian posterior. Only works for small-scale problems with dim<={config.MAX_DIM_INV}.")
         # Start timing
         ti = time.time()
 
@@ -355,7 +356,8 @@ class BayesianProblem(object):
                 callback(x_s[:,s], s)
 
         print("\r",'Sample', s+1, '/', Ns)
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our gui
+        #print('Elapsed time:', time.time() - ti)
         
         return cuqi.samples.Samples(x_s,self.model.domain_geometry)
     
@@ -378,7 +380,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns,Nb); #ToDo: Make results class
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our sampler
+        #print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -395,7 +398,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns, Nb)
-        print('Elapsed time:', time.time() - ti)
+        #we don't want this in our gui
+        #print('Elapsed time:', time.time() - ti)
        
         return x_s
 
@@ -413,7 +417,8 @@ class BayesianProblem(object):
         Nb = int(0.2*Ns)   # burn-in
         ti = time.time()
         x_s = MCMC.sample_adapt(Ns,Nb)
-        print('Elapsed time:', time.time() - ti)
+        #we dont want this in our gui
+        #print('Elapsed time:', time.time() - ti)
         
         return x_s
 
@@ -430,7 +435,8 @@ class BayesianProblem(object):
         samples = sampler.sample(Ns, Nb)
 
         # Print timing
-        print('Elapsed time:', time.time() - ti)
+        # we don't want this in our gui
+        #print('Elapsed time:', time.time() - ti)
 
         return samples
 
