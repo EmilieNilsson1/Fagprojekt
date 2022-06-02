@@ -104,10 +104,10 @@ def main():
 
     plot_column = [
         [sg.TabGroup([[sg.Tab('All plots', plot2D_tab1_layout, key='2DTab1'),
-                         sg.Tab('First plot', plot2D_tab2_layout, key = '2DTab2'),
-                         sg.Tab('Second plot', plot2D_tab3_layout, key = '2DTab3'),
-                         sg.Tab('Third plot', plot2D_tab4_layout, key = '2DTab4'),
-                         sg.Tab('Fifth plot', plot2D_tab5_layout, key = '2DTab5')]],
+                         sg.Tab('True image', plot2D_tab2_layout, key = '2DTab2'),
+                         sg.Tab('Blurred image', plot2D_tab3_layout, key = '2DTab3'),
+                         sg.Tab('Reconstructed image', plot2D_tab4_layout, key = '2DTab4'),
+                         sg.Tab('Uncertainty', plot2D_tab5_layout, key = '2DTab5')]],
                        key='-TABS2D-', title_color='black',
                        selected_title_color='white', tab_location='topleft', font = 'Helvetica 16')]
     ]
@@ -142,6 +142,10 @@ def main():
     # Draw the initial figures in the window
     fig1, axs = plt.subplots(nrows = 2, ncols = 2,figsize = (6,6))
     fig_agg1 = draw_figure(canvas1, fig1)
+    axs[0,0].axis('off')
+    axs[0,1].axis('off')
+    axs[1,0].axis('off')
+    axs[1,1].axis('off')
 
     fig2 = plt.figure(2,figsize = (6,6))
     fig_agg2 = draw_figure(canvas2, fig2)
@@ -249,7 +253,8 @@ def main():
             
             if Dist == "GaussianCov": 
                # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
-                TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
+                #TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
+                TP.prior = cuqi.distribution.GMRF(np.zeros(TP.model.domain_dim), 1, order = 1, physical_dim=2)
             
             elif Dist == "Laplace_diff":
                 TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
@@ -286,39 +291,47 @@ def main():
             axs[0,1].clear()
             axs[1,0].clear()
             axs[1,1].clear()
+            axs[0,0].axis('off')
+            axs[0,1].axis('off')
+            axs[1,0].axis('off')
+            axs[1,1].axis('off')
 
             plt.figure(1)
             axs[0,0].imshow(np.reshape(TP.exactSolution,(-1,128)), cmap='gray')
-            axs[0,0].set_title('exact')
+            axs[0,0].set_title('True image')
 
             axs[0,1].imshow(np.reshape(TP.data, (-1, 128)), cmap = 'gray')
-            axs[0,1].set_title('data')
+            axs[0,1].set_title('Blurred image')
 
             axs[1,0].imshow(np.reshape(xs.mean(), (-1, 128)), cmap = 'gray')
-            axs[1,0].set_title('mean')
+            axs[1,0].set_title('Reconstructed image')
 
             axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, 128)), cmap = 'gray')
-            axs[1,1].set_title('std')
+            axs[1,1].set_title('Uncertainty')
             fig_agg1.draw()
 
             fig2.clear()
             plt.figure(2)
             TP.exactSolution.plot()
+            plt.axis("off")
             fig_agg2.draw()
 
             fig3.clear()
             plt.figure(3)
             TP.data.plot()
+            plt.axis("off")
             fig_agg3.draw()
 
             fig4.clear()
             plt.figure(4)
             xs.plot_mean()
+            plt.axis("off")
             fig_agg4.draw()
 
             fig5.clear()
             plt.figure(5)
             xs.plot_std()
+            plt.axis("off")
             fig_agg5.draw()
 
                 
