@@ -58,7 +58,7 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True),
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-')], #key = 'Browse'
         #sg.Text("Choose a file: ", key = 'CF'), sg.Input(key="-FILE-"), sg.FileBrowse(file_types=file_types, key = 'Browse')],
         [sg.Text('Image size:', font = small_font), 
@@ -186,9 +186,11 @@ def main():
         window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
 
         if event == '-FILE-':
-            window['-TESTSIG_2D-'].update(value = ' ')
+            window['-TESTSIG_2D-'].update(value = '')
         if event in '-TESTSIG_2D-':
-            window['-FILE-'].update(value = ' ')
+            window['-FILE-'].update(value = '')
+        if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
+            window['-TESTSIG_2D-'].update(value = 'satellite')
 
         Dist = "GaussianCov"
         if event == '-GAUSSIAN_2D-':
@@ -262,7 +264,7 @@ def main():
             alpha = float(values['ALPHA'])
 
             # Define and compute posterior to Deconvolution problem
-            if values['-TESTSIG_2D-'] == "Own Picture":
+            if values['-TESTSIG_2D-'] == '':
                 filename = values["-FILE-"]
                 if os.path.exists(filename):
                     image = Image.open(values["-FILE-"]).convert('RGB')
