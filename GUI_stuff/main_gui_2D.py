@@ -80,8 +80,8 @@ def main():
         [place(sg.Text('Par2', font = small_font, key = '-PAR2_2D-', visible=False)), 
         place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE_2D-', visible=False, size = (10,1)))],
         [sg.Text('Sample size', font = small_font), 
-        sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
-        sg.T('1000', key='-RIGHT2_2D-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
+        sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
+        sg.T('10', key='-RIGHT2_2D-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF_2D-', size =(10,10), default_text=90),
         sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
         [sg.Checkbox('Show uncertainty', default=False, key='Uncer', enable_events = True)],
@@ -290,8 +290,8 @@ def main():
                  TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(TP.model.domain_dim), scale = par1, bc_type = par2, physical_dim = 2)
                  window['-OUTPUT_2D-'].update(visible = True)
                 
-            # if Dist == "Cauchy_diff":
-            #     TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
+            if Dist == "Cauchy_diff":
+                TP.prior = getattr(cuqi.distribution, Dist)(location = np.zeros(128), scale = par1, bc_type = par2)
                 
             try:
                 xs = TP.sample_posterior(sampsize) # Sample posterior
