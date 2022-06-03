@@ -58,8 +58,9 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains','Own Picture'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True),
-        place(sg.Text("Choose a file: ", key = 'CF', visible = False)), place(sg.Input(key="-FILE-", visible = False, size = (20,10))), place(sg.FileBrowse(file_types=file_types, key = 'Browse', visible = False))],
+        [sg.Combo(['-','astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True),
+        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-')], #key = 'Browse'
+        #sg.Text("Choose a file: ", key = 'CF'), sg.Input(key="-FILE-"), sg.FileBrowse(file_types=file_types, key = 'Browse')],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
@@ -184,20 +185,12 @@ def main():
         window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
         window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
 
+        if event == '-FILE-':
+            window['-TESTSIG_2D-'].update(value = '-')
         if event in '-TESTSIG_2D-':
-            if values['-TESTSIG_2D-'] == 'Own Picture':
-                window['CF'].update(visible = True)
-                window['Browse'].update(visible = True)
-                window['-FILE-'].update(visible = True)
-            else:
-                window['CF'].update(visible = False)
-                window['Browse'].update(visible = False)
-                window['-FILE-'].update(visible = False)
+            window['-FILE-'].update(value = ' ')
 
-
-        # Select prior distribution
-        #Dist = values['-DIST_2D-']
-        # buttons change accordingly
+        Dist = "GaussianCov"
         if event == '-GAUSSIAN_2D-':
             Dist = "GaussianCov"
             window['PRIOR_TEXT_2D'].update('Set parameters for gaussian distribution')
@@ -271,7 +264,6 @@ def main():
             # Define and compute posterior to Deconvolution problem
             if values['-TESTSIG_2D-'] == "Own Picture":
                 filename = values["-FILE-"]
-
                 if os.path.exists(filename):
                     image = Image.open(values["-FILE-"]).convert('RGB')
                 # if values[0] == True:
