@@ -2,6 +2,7 @@
 #!/usr/bin/env python
 # Basic packages
 from email.policy import default
+from turtle import width
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
@@ -50,6 +51,10 @@ def place(elem):
 # Main method
 def main():
 
+    # initialising toggles for info buttons
+    iNum = 3
+    iTog = np.full((iNum,) , False )
+
     # look into enable_events = True
     # Define the GUI layout
     big_font = 'Courier 20 bold'
@@ -60,7 +65,8 @@ def main():
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
-        sg.T('0.05', key='-RIGHTn-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
+        sg.T('0.05', key='-RIGHTn-', visible = True),sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',0))],
+        [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog[0]), key= ('-ITX-',0)))],
         [sg.Text('_'*120)],
         [sg.Text('Choose prior distribution', font =medium_font)],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss.png", (150,300)), key = '-GAUSSIAN-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
@@ -68,18 +74,26 @@ def main():
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)],
         [sg.Text('Set prior parameters', font =medium_font,key = 'PRIOR_TEXT')],
-        [place(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
-        place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
-        place(sg.T('0.1', key='-RIGHT1-', visible = False))],
-        [place(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
-        place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
+        # [place(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
+        # place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
+        # place(sg.T('0.1', key='-RIGHT1-', visible = False))],
+        # [place(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
+        # place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
+        [sg.pin(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
+        sg.pin(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
+        sg.pin(sg.T('0.1', key='-RIGHT1-', visible = False))],
+        [sg.pin(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
+        sg.pin(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
         [sg.Text('_'*120)],
         [sg.Text('Deconvolution dims dims', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
-        sg.T('1000', key='-RIGHT2-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
+        sg.T('1000', key='-RIGHT2-'),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',1))],
+        [sg.pin(sg.Text('Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.', text_color='black', background_color='light yellow' , visible= bool(iTog[1]), key= ('-ITX-',1)))],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
-        sg.Image("info.png",(18,18),tooltip="Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ")],
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',2))],
+        [sg.pin(sg.Text('Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ', text_color='black', background_color='light yellow' , visible= bool(iTog[2]), key= ('-ITX-',2)))],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
@@ -189,6 +203,16 @@ def main():
             window['-PAR1-'].update('Spread')
             window['-FIGUP-'].update(visible = False)
 
+        # Clicking info button: showing and removing information
+        for i in range(iNum):
+            if event == ('-IB-',i):
+                for j in range(iNum):
+                    if j == i:
+                        iTog[j] = not iTog[j]
+                        window[('-ITX-',j)].update(visible=bool(iTog[j]))
+                        continue
+                    iTog[j] = False
+                    window[('-ITX-',j)].update(visible=bool(iTog[j]))
 
         # Clicked update button
         if event in ('Update', None):
