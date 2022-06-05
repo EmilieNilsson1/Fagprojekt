@@ -55,6 +55,11 @@ def main():
     medium_font = 'Courier 16'
     small_font = 'Helvetica 12'
 
+    # initialising toggles for info buttons:
+    # number of info buttons
+    iNum2D = 4
+    iTog2D = np.full((iNum2D,) , False )
+
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
@@ -64,11 +69,15 @@ def main():
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
-        sg.T('0.05', key='-RIGHTn_2D-', visible = True),sg.Image("info.png",(18,18),tooltip="Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.")],
+        sg.T('0.05', key='-RIGHTn_2D-', visible = True),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
+        [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
         [sg.Text('Choose prior distribution', font =medium_font)], 
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
+        [sg.pin(sg.Text('something about the priors - diff things', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Text('Set parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
@@ -78,8 +87,12 @@ def main():
         [sg.Text('_'*120)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
-        sg.T('10', key='-RIGHT2_2D-'),sg.Image("info.png",(18,18),tooltip="Change sample size. Choosing large values \nmay cause long computation time.")],
-        [sg.Checkbox('Show uncertainty', default=False, key='Uncer', enable_events = True, font = small_font)],
+        sg.T('10', key='-RIGHT2_2D-'),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',1))],
+        [sg.pin(sg.Text('Change sample size. Choosing large values \nmay cause long computation time.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[1]), key= ('-ITX_2D-',1)))],
+        [sg.Checkbox('Add uncertainty overlay', default=False, key='Uncer', enable_events = True, font = small_font),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
+        [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
@@ -179,20 +192,22 @@ def main():
         #window.Element('-RIGHT2_2D-').update(int(values['-SLIDER-SAMPLE_2D-'])) 
         window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
         window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
-        if event in '-RIGHTA_2D-':
-             window.Element('ALPHA').update(value = values['-RIGHTA_2D-'])
-        if event in 'ALPHA':
-            window.Element('-RIGHTA_2D-').update(values['ALPHA'])
 
-        if event in '-RIGHT1_2D-':
-             window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
-        if event in '-SLIDER1_2D-':
-            window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-'])
+        if isinstance(event, str): 
+            if event in '-RIGHTA_2D-':
+                window.Element('ALPHA').update(value = values['-RIGHTA_2D-'])
+            if event in 'ALPHA':
+                window.Element('-RIGHTA_2D-').update(values['ALPHA'])
+            if event in '-RIGHT1_2D-':
+                window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
+            if event in '-SLIDER1_2D-':
+                window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-'])
        
 
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
-        if event in '-TESTSIG_2D-':
+        # if isinstance(event, str):  
+        if isinstance(event, str) and event in '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
@@ -263,7 +278,7 @@ def main():
 
             window['-FIGUP_2D-'].update(visible = True)
             window['-FIGUP_2D-'].update('Might take a while')
-            
+
     # Clicked update button
         if event in ('Update', None):
             #window['-FIGUP-'].update(visible = True)
@@ -411,7 +426,18 @@ def main():
                 plt.axis("off")
                 fig_agg4.draw()
             except: pass
-        
+
+        # Clicking info button: showing and removing information
+        for i in range(iNum2D):
+                if event == ('-IB_2D-',i):
+                    for j in range(iNum2D):
+                        if j == i:
+                            iTog2D[j] = not iTog2D[j]
+                            window[('-ITX_2D-',j)].update(visible=bool(iTog2D[j]))
+                            continue
+                        iTog2D[j] = False
+                        window[('-ITX_2D-',j)].update(visible=bool(iTog2D[j])) 
+            
 
 
 if __name__ == '__main__':
