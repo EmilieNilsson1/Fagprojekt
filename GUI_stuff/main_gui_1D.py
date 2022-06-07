@@ -50,11 +50,10 @@ def place(elem):
 
 # Main method
 def main():
-
     # initialising toggles for info buttons
     iNum = 3
     iTog = np.full((iNum,) , False )
-
+    
     # look into enable_events = True
     # Define the GUI layout
     big_font = 'Courier 20 bold'
@@ -95,6 +94,8 @@ def main():
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'white', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT-')]
     ]
+
+
 
     plot_column = [
         [sg.Canvas(size=(1100, 620), key='-CANVAS-')]
