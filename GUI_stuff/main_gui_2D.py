@@ -1,6 +1,7 @@
 #%%
 #!/usr/bin/env python
 # Basic packages
+from argparse import FileType
 from email.policy import default
 import numpy as np
 import scipy as sp
@@ -73,6 +74,8 @@ def main():
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
+        [sg.Button('Show initial signal', key = 'show2D')],
+        [sg.Text('_'*120)],
         [sg.Text('Choose prior distribution', font =medium_font)], 
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
@@ -87,6 +90,7 @@ def main():
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = True, size = (20,10))), 
         place(sg.InputText('0.1', key='-RIGHT1_2D-', visible = True, enable_events = True, size = (5,1)))],
         [sg.Text('_'*120)],
+        [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('10', key='-RIGHT2_2D-', enable_events = True, size = (5,0.8)),
@@ -385,6 +389,79 @@ def main():
             window['up2d'].update(disabled=False)
             window['up2d'].update(button_color=sg.theme_button_color())
 
+        if event == 'show2D':
+            axs[0,0].clear()
+            axs[0,1].clear()
+            axs[1,0].clear()
+            axs[1,1].clear()
+            axs[0,0].axis('off')
+            axs[0,1].axis('off')
+            axs[1,0].axis('off')
+            axs[1,1].axis('off')
+            fig2.clear()
+            fig3.clear()
+            fig4.clear()
+            fig5.clear()
+            
+            if values['-FILE-'] == '':
+                sig = values['-TESTSIG_2D-']
+                sz = int(values['-SLIDER-SIZE_2D-'])
+                n_std = float(values['-SLIDER-NOISE_2D-'])
+                TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std=n_std)
+                plt.figure(1)
+                axs[0,0].imshow(np.reshape(TP.exactSolution,(-1,sz)), cmap='gray')
+                axs[0,0].set_title('True image')
+
+                axs[0,1].imshow(np.reshape(TP.data, (-1, sz)), cmap = 'gray')
+                axs[0,1].set_title('Blurred image')
+                fig_agg1.draw()
+
+                fig2.clear()
+                plt.figure(2)
+                TP.exactSolution.plot()
+                plt.axis("off")
+                fig_agg2.draw()
+
+                fig3.clear()
+                plt.figure(3)
+                TP.data.plot()
+                plt.axis("off")
+                fig_agg3.draw()
+            elif values['-FILE-'] != '':
+                filename = values["-FILE-"]
+                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types:
+                
+                    sz = int(values['-SLIDER-SIZE_2D-'])
+                    
+                    image = Image.open(values["-FILE-"]).convert('RGB')
+                    image = image.resize((sz,sz))
+                    image = cuqi.data.rgb2gray(image)
+                    TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = image, noise_std = n_std)
+                    plt.figure(1)
+                    axs[0,0].imshow(image, cmap = 'gray')
+                    axs[0,0].set_title('True image')
+
+                    axs[0,1].imshow(np.reshape(TP.data, (-1, sz)), cmap = 'gray')
+                    axs[0,1].set_title('Blurred image')
+                    fig_agg1.draw()
+
+                    fig2.clear()
+                    plt.figure(2)
+                    plt.imshow(image, cmap = 'gray')
+                    plt.axis("off")
+                    fig_agg2.draw()
+
+                    fig3.clear()
+                    plt.figure(3)
+                    TP.data.plot()
+                    plt.axis("off")
+                    fig_agg3.draw()
+                else:
+                    window['file_error'].update(visible = True)
+
+
+
+
     # Clicked update button
         #if event in ('Update', None):
         if event in ('up2d', None):
@@ -405,7 +482,7 @@ def main():
             # Define and compute posterior to Deconvolution problem
             if values['-TESTSIG_2D-'] == '':
                 filename = values["-FILE-"]
-                if os.path.exists(filename):
+                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types:
                     window['file_error'].update(visible = False)
                     image = Image.open(values["-FILE-"]).convert('RGB')
                     image = image.resize((sz,sz))
