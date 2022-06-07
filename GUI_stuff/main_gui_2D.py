@@ -300,9 +300,9 @@ def main():
                 filename = values["-FILE-"]
                 if os.path.exists(filename):
                     image = Image.open(values["-FILE-"]).convert('RGB')
-                # if values[0] == True:
                     image = image.resize((sz,sz))
-                    TP = cuqi.testproblem.Deconvolution2D(phantom = cuqi.data.rgb2gray(image), noise_std = n_std)
+                    sig = cuqi.data.rgb2gray(image)
+                    TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
             else:
                 sig = values['-TESTSIG_2D-']
                 TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
