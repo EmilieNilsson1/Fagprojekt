@@ -261,7 +261,7 @@ def main():
                 grid = np.linspace(0,128, 128)
                 fig.clear()
                 plt.subplot(211)
-                plt.plot(grid, TP.data) # Noisy data
+                plt.plot(grid, TP.data/max(TP.data)) # Noisy data
                 plt.legend(['Measured data'], loc = 1)
                 plt.subplot(212)
                 xs.plot_ci(conf) # Solution
