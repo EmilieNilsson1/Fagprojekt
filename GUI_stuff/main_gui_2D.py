@@ -24,7 +24,7 @@ import cuqi
 
 file_types = [("JPEG (*.jpg)", "*.jpg"),("PNG (*.png)", "*.png"),
               ("All files (*.*)", "*.*")]
-
+file_types2 = ['.png','.PNG','.JPG', '.jpg', '.jpeg']
 # Convenience method to draw figure
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -184,6 +184,7 @@ def main():
     fig_agg5 = draw_figure(canvas5, fig5)
 
     test = [True, True, True, True, True]
+    Dist = "GaussianCov"
    # Dist = values['-DIST_2D-'] # setting Gaussian as default
     while True:
 
@@ -303,8 +304,9 @@ def main():
             window['-TESTSIG_2D-'].update(value = '')
             window['file_error'].update(visible = False)
         # if isinstance(event, str):  
-        if isinstance(event, str) and event in '-TESTSIG_2D-':
+        if event == '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
+            print('')
             window['file_error'].update(visible = False)
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
@@ -312,7 +314,7 @@ def main():
         
        
 
-        Dist = "GaussianCov"
+        
         if event == '-GAUSSIAN_2D-' or event == '-LAPLACE_2D-' or event == '-CAUCHY_2D-':
             window.Element('ALPHA').update(value = 0.05)
             window.Element('-RIGHTA_2D-').update(value = 0.05)
@@ -346,7 +348,7 @@ def main():
             window['ORDER_TEXT'].update('Boundary')
             window['ALPHA_TEXT'].update('Scale')
             window['ALPHA_TEXT'].update(visible = True)
-            window['ORDER'].update(value = 'zeros', values = ['zeros', 'periodic'])
+            window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
             window['ALPHA_TEXT'].update('Scale')  
             window['ALPHA'].update(visible = True)
             window['ALPHA'].update(range = (0,1))
@@ -367,7 +369,7 @@ def main():
             window['ORDER_TEXT'].update('Boundary')
             window['ALPHA_TEXT'].update('Scale')
             window['ALPHA_TEXT'].update(visible = True)
-            window['ORDER'].update(value = 'zeros', values = ['zeros', 'periodic'])
+            window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
             window['ALPHA_TEXT'].update('Scale')  
             window['ALPHA'].update(visible = True)
             window['ALPHA'].update(range = (0,1))
@@ -388,6 +390,17 @@ def main():
         elif sum(test) == 5:
             window['up2d'].update(disabled=False)
             window['up2d'].update(button_color=sg.theme_button_color())
+
+        if event == '-FILE-':
+            filename = values["-FILE-"]
+            if (os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2) or filename == '':
+                window['up2d'].update(disabled = False)
+                window['up2d'].update(button_color = sg.theme_button_color())
+                window['file_error'].update(visible = False)
+            else:
+                window['up2d'].update(disabled = True)
+                window['up2d'].update(button_color = 'gray')
+                window['file_error'].update(visible = True)
 
         if event == 'show2D':
             axs[0,0].clear()
@@ -427,9 +440,12 @@ def main():
                 TP.data.plot()
                 plt.axis("off")
                 fig_agg3.draw()
+
+                window['up2d'].update(disabled = False)
+                window['up2d'].update(button_color = sg.theme_button_color())
             elif values['-FILE-'] != '':
                 filename = values["-FILE-"]
-                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types:
+                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                 
                     sz = int(values['-SLIDER-SIZE_2D-'])
                     
@@ -458,8 +474,8 @@ def main():
                     fig_agg3.draw()
                 else:
                     window['file_error'].update(visible = True)
-
-
+                    window['up2d'].update(disabled = True)
+                    window['up2d'].update(button_color = 'gray')
 
 
     # Clicked update button
@@ -482,7 +498,7 @@ def main():
             # Define and compute posterior to Deconvolution problem
             if values['-TESTSIG_2D-'] == '':
                 filename = values["-FILE-"]
-                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types:
+                if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                     window['file_error'].update(visible = False)
                     image = Image.open(values["-FILE-"]).convert('RGB')
                     image = image.resize((sz,sz))
@@ -579,7 +595,7 @@ def main():
             fig_agg5.draw()
 
              
-        if event == 'Uncer':
+        if event == 'Uncer' or event == 'up2d':
             if values['Uncer'] == True:
                 try:
                     plt.figure(1)
