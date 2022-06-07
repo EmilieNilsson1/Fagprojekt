@@ -63,7 +63,7 @@ def main():
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
-        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-')], #key = 'Browse'
+        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
@@ -95,7 +95,7 @@ def main():
         [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
-        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
+        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = True, key='-OUTPUT_2D-')]
     ]
 
     # 2D plot tabs
@@ -294,11 +294,16 @@ def main():
 
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
+            window['file_error'].update(visible = False)
         # if isinstance(event, str):  
         if isinstance(event, str) and event in '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
+            window['file_error'].update(visible = False)
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
+            window['file_error'].update(visible = False)
+        
+       
 
         Dist = "GaussianCov"
         if event == '-GAUSSIAN_2D-' or event == '-LAPLACE_2D-' or event == '-CAUCHY_2D-':
@@ -398,10 +403,17 @@ def main():
             if values['-TESTSIG_2D-'] == '':
                 filename = values["-FILE-"]
                 if os.path.exists(filename):
+                    window['file_error'].update(visible = False)
                     image = Image.open(values["-FILE-"]).convert('RGB')
                     image = image.resize((sz,sz))
                     sig = cuqi.data.rgb2gray(image)
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
+                else:
+                    TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = 'satellite', noise_std = n_std)
+                    window['file_error'].update(visible = True)
+                    window['-TESTSIG_2D-'].update(value = 'satellite')
+                    window['-FILE-'].update(value = '')
+
             else:
                 sig = values['-TESTSIG_2D-']
                 TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
