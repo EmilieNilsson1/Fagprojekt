@@ -48,8 +48,7 @@ def place(elem):
     return sg.Column([[elem]], pad=(0,0))
 
 def main():
-
-    # look into enable_events = True
+    test = True
     # Define the GUI layout
     big_font = 'Courier 20 bold'
     medium_font = 'Courier 16'
@@ -67,9 +66,9 @@ def main():
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-')], #key = 'Browse'
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
-        sg.T('128', key='-RIGHT_SIZE_2D-', visible = True)],
+        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
-        sg.T('0.05', key='-RIGHTn_2D-', visible = True),
+        sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
         [sg.Text('Choose prior distribution', font =medium_font)], 
@@ -87,13 +86,13 @@ def main():
         [sg.Text('_'*120)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
-        sg.T('10', key='-RIGHT2_2D-'),
+        sg.Input('10', key='-RIGHT2_2D-', enable_events = True, size = (5,0.8)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',1))],
         [sg.pin(sg.Text('Change sample size. Choosing large values \nmay cause long computation time.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[1]), key= ('-ITX_2D-',1)))],
         [sg.Checkbox('Add uncertainty overlay', default=False, key='Uncer', enable_events = True, font = small_font),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
         [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
-        [sg.Button('Update', size=(10, 1), font=medium_font),
+        [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
@@ -177,7 +176,7 @@ def main():
     fig5 = plt.figure(5,figsize = (6,6))
     fig_agg5 = draw_figure(canvas5, fig5)
 
-
+    test = [True, True, True, True, True]
    # Dist = values['-DIST_2D-'] # setting Gaussian as default
     while True:
 
@@ -187,22 +186,111 @@ def main():
         # Clicked exit button
         if event in ('Exit', None):
             exit()
+         
+        orig_col = window['-RIGHT_SIZE_2D-'].BackgroundColor
         
-        #window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-']) # updates slider values
-        #window.Element('-RIGHT2_2D-').update(int(values['-SLIDER-SAMPLE_2D-'])) 
-        window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
-        window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
-
+        
         if isinstance(event, str): 
             if event in '-RIGHTA_2D-':
-                window.Element('ALPHA').update(value = values['-RIGHTA_2D-'])
+                try:
+                    if float(values['-RIGHTA_2D-']) >= window.Element('ALPHA').Range[0] and float(values['-RIGHTA_2D-'])<= window.Element('ALPHA').Range[1]:
+                        window.Element('ALPHA').update(value = values['-RIGHTA_2D-'])
+                        window.Element('-RIGHTA_2D-').update(background_color = orig_col)
+                        test[0] = True
+                    else:
+                        window.Element('ALPHA').update(value = 0.05)
+                        window.Element('-RIGHTA_2D-').update(background_color = 'red')
+                        test[0] = False
+                except:
+                    window.Element('ALPHA').update(value = 0.05)
+                    window.Element('-RIGHTA_2D-').update(background_color = 'red')
+                    test[0] = False
+
             if event in 'ALPHA':
                 window.Element('-RIGHTA_2D-').update(values['ALPHA'])
+                test[0] = True
+                window.Element('-RIGHTA_2D-').update(background_color = orig_col)
+            
+           
             if event in '-RIGHT1_2D-':
-                window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
+                try:
+                    if float(values['-RIGHT1_2D-']) >= window.Element('-SLIDER1_2D-').Range[0] and float(values['-RIGHT1_2D-'])<= window.Element('-SLIDER1_2D-').Range[1]:
+                        window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
+                        window.Element('-RIGHT1_2D-').update(background_color = orig_col)
+                        test[1] = True
+                    else:
+                        window.Element('-SLIDER1_2D-').update(value = 0.05)
+                        window.Element('-RIGHT1_2D-').update(background_color = 'red')
+                        test[1] = False
+                except: 
+                    window.Element('-SLIDER1_2D-').update(value = 0.05)
+                    window.Element('-RIGHT1_2D-').update(background_color = 'red')
+                    test[1] = False
+            if window.Element('-RIGHT1_2D-').visible == False:
+                test[1] = True
+                
             if event in '-SLIDER1_2D-':
                 window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-'])
-       
+                test[1] = True
+                window.Element('-RIGHT1_2D-').update(background_color = orig_col)
+            
+            if event in '-RIGHT2_2D-':
+                try:
+                    if int(values['-RIGHT2_2D-']) in range(window['-SLIDER-SAMPLE_2D-'].Range[0],window['-SLIDER-SAMPLE_2D-'].Range[1]):
+                        window.Element('-SLIDER-SAMPLE_2D-').update(value = int(values['-RIGHT2_2D-']))
+                        window.Element('-RIGHT2_2D-').update(background_color = orig_col)
+                        test[2] = True
+                    else:
+                        window.Element('-SLIDER-SAMPLE_2D-').update(value = 100)
+                        window.Element('-RIGHT2_2D-').update(background_color = 'red')
+                        test[2] = False
+                except:
+                    window.Element('-SLIDER-SAMPLE_2D-').update(value = 100)
+                    window.Element('-RIGHT2_2D-').update(background_color = 'red')
+                    test[2] = False
+            if event in '-SLIDER-SAMPLE_2D-':
+                window.Element('-RIGHT2_2D-').update(int(values['-SLIDER-SAMPLE_2D-']))
+                test[2] = True
+                window.Element('-RIGHT2_2D-').update(background_color = orig_col)
+            
+            if event in '-RIGHTn_2D-':
+                try:
+                    if float(values['-RIGHTn_2D-']) >= window.Element('-SLIDER-NOISE_2D-').Range[0] and float(values['-RIGHTn_2D-'])<= window.Element('-SLIDER-NOISE_2D-').Range[1]:
+                        window.Element('-SLIDER-NOISE_2D-').update(value = values['-RIGHTn_2D-'])
+                        window.Element('-RIGHTn_2D-').update(background_color = orig_col)
+                        test[3] = True
+                    else:
+                        window.Element('-SLIDER-NOISE_2D-').update(value = 0.05)
+                        window.Element('-RIGHTn_2D-').update(background_color = 'red')
+                        test[3] = False
+                except: 
+                    window.Element('-SLIDER-NOISE_2D-').update(value = 0.05)
+                    window.Element('-RIGHTn_2D-').update(background_color = 'red')
+                    test[3] = False
+            if event in '-SLIDER-NOISE_2D-':
+                window.Element('-RIGHTn_2D-').update(values['-SLIDER-NOISE_2D-'])
+                test[3] = True
+                window.Element('-RIGHTn_2D-').update(background_color = orig_col)
+            
+            if event in '-RIGHT_SIZE_2D-':
+                try:
+                    if int(values['-RIGHT_SIZE_2D-']) in range(window['-SLIDER-SIZE_2D-'].Range[0],window['-SLIDER-SIZE_2D-'].Range[1]):
+                        window.Element('-SLIDER-SIZE_2D-').update(value = int(values['-RIGHT_SIZE_2D-']))
+                        window.Element('-RIGHT_SIZE_2D-').update(background_color = orig_col)
+                        test[4] = True
+                    elif int(values['-RIGHT_SIZE_2D-']) not in range(window['-SLIDER-SIZE_2D-'].Range[1], window['-SLIDER-SIZE_2D-'].Range[1]):
+                        window.Element('-SLIDER-SIZE_2D-').update(value = 128)
+                        window.Element('-RIGHT_SIZE_2D-').update(background_color = 'red')
+                        test[4] = False
+                except:
+                    window.Element('-SLIDER-SIZE_2D-').update(value = 128)
+                    window.Element('-RIGHT_SIZE_2D-').update(background_color = 'red')
+                    test[4] = False
+            if event in '-SLIDER-SIZE_2D-':
+                window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
+                test[4] = True
+                window.Element('-RIGHT_SIZE_2D-').update(background_color = orig_col) 
+        
 
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
@@ -213,6 +301,15 @@ def main():
             window['-TESTSIG_2D-'].update(value = 'satellite')
 
         Dist = "GaussianCov"
+        if event == '-GAUSSIAN_2D-' or event == '-LAPLACE_2D-' or event == '-CAUCHY_2D-':
+            window.Element('ALPHA').update(value = 0.05)
+            window.Element('-RIGHTA_2D-').update(value = 0.05)
+            window.Element('-RIGHTA_2D-').update(background_color = orig_col)
+            test[0] = True
+            window.Element('-SLIDER1_2D-').update(value = 0.05)
+            window.Element('-RIGHT1_2D-').update(value = 0.05)
+            window.Element('-RIGHT1_2D-').update(background_color = orig_col)
+            test[1] = True
         if event == '-GAUSSIAN_2D-':
             Dist = "GaussianCov"
             window['ORDER'].update(value = '0',values = ['0', '1', '2'])
@@ -225,7 +322,6 @@ def main():
             window['ALPHA'].update(value = 0.05)
             window['ALPHA'].update(visible=True)
             window['ALPHA'].update(range = (0,10))
-            #window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
             window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
             window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
@@ -233,9 +329,8 @@ def main():
             window['-SLIDER1_2D-'].update(visible=True)
             window['-RIGHT1_2D-'].update(visible=True)
             window['-PAR1_2D-'].update('Prior std')
-            #window['-PAR2_2D-'].update(visible = False) # removes buttons if other prior was chosen first
-            #window['-BCTYPE_2D-'].update(visible = False)
         elif event == '-LAPLACE_2D-':
+            test[1] = True
             window['ORDER_TEXT'].update('Boundary')
             window['ALPHA_TEXT'].update('Scale')
             window['ALPHA_TEXT'].update(visible = True)
@@ -245,21 +340,18 @@ def main():
             window['ALPHA'].update(range = (0,1))
             Dist = "Laplace_diff"
             window['PRIOR_TEXT_2D'].update('Set parameters for laplace distribution')
-            #window['-LAPLACE-'].update(button_color='white on green')
             window['-LAPLACE_2D-'].update(button_color=(None,'green'))
             window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-            #window['-PAR2_2D-'].update(visible = True) # add new parameter
-            #window['-PAR2_2D-'].update('Boundary')
-            #window['-BCTYPE_2D-'].update(visible = True)
             window['-PAR1_2D-'].update(visible = False)
             window['-SLIDER1_2D-'].update(visible=False)
             window['-RIGHT1_2D-'].update(visible=False)
+
             window['-FIGUP_2D-'].update(visible = True)
             window['-FIGUP_2D-'].update('Might take a while')
         elif event == '-CAUCHY_2D-':
             Dist = "Cauchy_diff"
-            #window['ORDER'].update(visible=False)
+            test[1] = True
             window['ORDER_TEXT'].update('Boundary')
             window['ALPHA_TEXT'].update('Scale')
             window['ALPHA_TEXT'].update(visible = True)
@@ -267,9 +359,8 @@ def main():
             window['ALPHA_TEXT'].update('Scale')  
             window['ALPHA'].update(visible = True)
             window['ALPHA'].update(range = (0,1))
-
             window['PRIOR_TEXT_2D'].update('Set parameters for cauchy distribution')
-            window['-CAUCHY_2D-'].update(button_color=(None, 'green')) #'white on green')
+            window['-CAUCHY_2D-'].update(button_color=(None, 'green'))
             window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
             window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-SLIDER1_2D-'].update(visible=False)
@@ -278,9 +369,17 @@ def main():
 
             window['-FIGUP_2D-'].update(visible = True)
             window['-FIGUP_2D-'].update('Might take a while')
+        
+        if sum(test) != 5:
+            window['up2d'].update(disabled=True)
+            window['up2d'].update(button_color='gray')
+        elif sum(test) == 5:
+            window['up2d'].update(disabled=False)
+            window['up2d'].update(button_color='blue')
 
     # Clicked update button
-        if event in ('Update', None):
+        #if event in ('Update', None):
+        if event in ('up2d', None):
             #window['-FIGUP-'].update(visible = True)
             #window['-FIGUP-'].update('Loading...')
 
@@ -308,14 +407,8 @@ def main():
                 TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
             
             if Dist == "GaussianCov": 
-               # TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1) 
-                #TP.prior = cuqi.distribution.GaussianCov(np.zeros(TP.model.domain_dim), 1)
                 TP.prior = cuqi.distribution.GMRF(np.zeros(TP.model.domain_dim), alpha, order = order, physical_dim=2)
                 window['-OUTPUT_2D-'].update(visible = True)
-            
-            #elif Dist == "Laplace_diff":
-            #    TP.prior = cuqi.distribution.Laplace_diff(np.zeros(TP.model.domain_dim), 1)
-
             
             
             if Dist == "Laplace_diff":
@@ -339,9 +432,6 @@ def main():
 
                 # Remove output window
                 window['-OUTPUT_2D-'].update(visible=False)
-    
-                # Update plot
-                # grid = np.linspace(0,128, 128)
 
             #fig1.clear()
             std = np.reshape(np.std(xs.samples,axis=-1),(-1,sz))
