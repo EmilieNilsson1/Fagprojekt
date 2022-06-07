@@ -50,11 +50,10 @@ def place(elem):
 
 # Main method
 def main():
-
     # initialising toggles for info buttons
     iNum = 3
     iTog = np.full((iNum,) , False )
-
+    
     # look into enable_events = True
     # Define the GUI layout
     big_font = 'Courier 20 bold'
@@ -74,20 +73,15 @@ def main():
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy.png", (150,300)), key = '-CAUCHY-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Uniform', image_data = resize_base64_image("uniform.png", (150,300)), key = '-UNI-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)],
         [sg.Text('Set prior parameters', font =medium_font,key = 'PRIOR_TEXT')],
-        # [place(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
-        # place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
-        # place(sg.T('0.1', key='-RIGHT1-', visible = False))],
-        # [place(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
-        # place(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
         [sg.pin(sg.Text('Par1', font = small_font, key = '-PAR1-', visible = False)), 
         sg.pin(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1-', visible = False, size = (20,10))), 
         sg.pin(sg.T('0.1', key='-RIGHT1-', visible = False))],
         [sg.pin(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
         sg.pin(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
         [sg.Text('_'*120)],
-        [sg.Text('Plot settings', font = medium_font)],
+        [sg.Text('Set plot settings', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
-        sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
+        sg.Slider(range=(50, 3000), default_value=100, resolution=50, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-'),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',1))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.', text_color='black', background_color='light yellow' , visible= bool(iTog[1]), key= ('-ITX-',1)))],
@@ -100,6 +94,8 @@ def main():
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'white', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT-')]
     ]
+
+
 
     plot_column = [
         [sg.Canvas(size=(1100, 620), key='-CANVAS-')]
@@ -126,7 +122,21 @@ def main():
     fig = plt.figure(figsize = (6,6))
     fig_agg = draw_figure(canvas, fig)
 
-    Dist = "Gaussian" # setting Gaussian as default
+    # setting Gaussian as default
+    Dist = "Gaussian"
+    window['PRIOR_TEXT'].update('Set parameters for gaussian distribution')
+    window['-GAUSSIAN-'].update(button_color=(None,'green'))
+    window['-CAUCHY-'].update(button_color= sg.TRANSPARENT_BUTTON)
+    window['-LAPLACE-'].update(button_color= sg.TRANSPARENT_BUTTON)
+    window['-UNI-'].update(button_color= sg.TRANSPARENT_BUTTON)
+    window['-PAR1-'].update(visible = True)
+    window['-SLIDER1-'].update(visible=True)
+    window['-RIGHT1-'].update(visible=True)
+    window['-PAR1-'].update('Prior std')
+    window['-PAR2-'].update(visible = False) # removes buttons if other prior was chosen first
+    window['-BCTYPE-'].update(visible = False)
+    window['-FIGUP-'].update(visible = False)
+
     while True:
 
         # Read current events and values from GUI
@@ -281,7 +291,7 @@ def main():
                 meansamp = np.mean(samp, axis = -1)
                 plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
                 #plt.xlabel('x')
-                plt.ylim(-0.25, 1.25)
+                #plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 plt.legend()
                 fig_agg.draw()
@@ -291,7 +301,7 @@ def main():
                 samp = xs.samples
                 plt.subplot(212).clear()
                 xs.plot_ci(conf)
-                plt.ylim(-0.25, 1.25)
+                #plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 fig_agg.draw()
             except: pass
@@ -299,7 +309,7 @@ def main():
             try:
                 plt.subplot(212).clear()
                 xs.plot_ci(conf, exact=TP.exactSolution)
-                plt.ylim(-0.25, 1.25)
+                #plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 fig_agg.draw()
             except: pass
@@ -311,7 +321,7 @@ def main():
                 plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
                 plt.plot(grid, TP.exactSolution, color = 'orange', label = 'True Signal')
                 #plt.xlabel('x')
-                plt.ylim(-0.25, 1.25)
+                #plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 plt.legend()
                 fig_agg.draw()
