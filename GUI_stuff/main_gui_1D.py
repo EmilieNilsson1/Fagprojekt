@@ -288,6 +288,7 @@ def main():
             except: pass
         else: # plot_ci
             try:
+                samp = xs.samples
                 plt.subplot(212).clear()
                 xs.plot_ci(conf)
                 plt.ylim(-0.25, 1.25)
