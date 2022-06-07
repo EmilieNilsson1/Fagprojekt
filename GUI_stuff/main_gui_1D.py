@@ -62,7 +62,7 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
+        [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'], readonly = True, key = '-TESTSIG-' , default_value='Gauss')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn-', visible = True),sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog[0]), key= ('-ITX-',0)))],
