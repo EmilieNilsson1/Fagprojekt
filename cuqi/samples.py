@@ -344,7 +344,8 @@ class Samples(object):
 
     def plot_ci(self,percent=95,exact=None,*args,plot_envelope_kwargs={},**kwargs):
         """
-        Plots the credibility interval for the samples according to the geometry.
+        Plots the credibility interval for the samples 
+        according to the geometry.
 
         Parameters
         ---------
