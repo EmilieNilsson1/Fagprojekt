@@ -90,11 +90,11 @@ def main():
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-'),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',1))],
-        [sg.pin(sg.Text('Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.', text_color='black', background_color='light yellow' , visible= bool(iTog[1]), key= ('-ITX-',1)))],
+        [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.', text_color='black', background_color='light yellow' , visible= bool(iTog[1]), key= ('-ITX-',1)))],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',2))],
         [sg.pin(sg.Text('Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ', text_color='black', background_color='light yellow' , visible= bool(iTog[2]), key= ('-ITX-',2)))],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10))],
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10)),sg.Checkbox('Show confidence interval', default=True, key='PLOT-CONF', enable_events = True, pad = (3, 10))],
         [sg.Button('Update', size=(10, 1), font=medium_font),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'white', font= medium_font, enable_events = True)],
@@ -273,19 +273,63 @@ def main():
 
         # Show true signal
         show_true = values['TRUE_SIGNAL']
-        if show_true:
+        show_ci = values['PLOT-CONF']
+        if not show_ci and not show_true: # plot mean
             try:
-                p1 = plt.plot(grid, TP.exactSolution, color = 'darkorange')
+                plt.subplot(212).clear()
+                samp = xs.samples
+                meansamp = np.mean(samp, axis = -1)
+                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
+                plt.xlabel('x')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                plt.legend()
                 fig_agg.draw()
-            except:
-                pass
-        else:
+            except: pass
+        else: # plot_ci
             try:
-                p = p1.pop(0)
-                p.remove()
+                plt.subplot(212).clear()
+                xs.plot_ci(conf)
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
                 fig_agg.draw()
-            except:
-                pass
+            except: pass
+        if show_true and show_ci:
+            try:
+                plt.subplot(212).clear()
+                xs.plot_ci(conf, exact=TP.exactSolution)
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                fig_agg.draw()
+            except: pass
+        if show_true and not show_ci:
+            try:
+                plt.subplot(212).clear()
+                samp = xs.samples
+                meansamp = np.mean(samp, axis = -1)
+                plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
+                plt.plot(grid, TP.exactSolution, color = 'orange', label = 'True Signal')
+                plt.xlabel('x')
+                plt.ylim(-0.25, 1.25)
+                plt.xlim(0, 128)
+                plt.legend()
+                fig_agg.draw()
+            except: pass
+
+        #old show true stuff
+        # if show_true:
+        #     try:
+        #         p1 = plt.plot(grid, TP.exactSolution, color = 'darkorange')
+        #         fig_agg.draw()
+        #     except:
+        #         pass
+        # else:
+        #     try:
+        #         p = p1.pop(0)
+        #         p.remove()
+        #         fig_agg.draw()
+        #     except:
+        #         pass
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
