@@ -375,7 +375,7 @@ def main():
             window['up2d'].update(button_color='gray')
         elif sum(test) == 5:
             window['up2d'].update(disabled=False)
-            window['up2d'].update(button_color='blue')
+            window['up2d'].update(button_color=sg.theme_button_color())
 
     # Clicked update button
         #if event in ('Update', None):
