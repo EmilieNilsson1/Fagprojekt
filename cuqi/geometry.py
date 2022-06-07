@@ -300,7 +300,9 @@ class Continuous1D(Continuous):
 
     def _plot_config(self):
         if self.axis_labels is not None:
-            plt.xlabel(self.axis_labels[0])
+            # don't need x label
+            #plt.xlabel(self.axis_labels[0])
+            pass
 
 
 class Continuous2D(Continuous):

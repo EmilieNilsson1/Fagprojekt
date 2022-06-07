@@ -85,7 +85,7 @@ def main():
         [sg.pin(sg.Text('Par2', font = small_font, key = '-PAR2-', visible=False)), 
         sg.pin(sg.Combo(['zero', 'periodic'], default_value = 'zero', key = '-BCTYPE-', visible=False, size = (10,1)))],
         [sg.Text('_'*120)],
-        [sg.Text('Deconvolution dims dims', font = medium_font)],
+        [sg.Text('Plot settings', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(100, 5000), default_value=100, resolution=100, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
         sg.T('1000', key='-RIGHT2-'),
@@ -280,7 +280,7 @@ def main():
                 samp = xs.samples
                 meansamp = np.mean(samp, axis = -1)
                 plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
-                plt.xlabel('x')
+                #plt.xlabel('x')
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 plt.legend()
@@ -309,7 +309,7 @@ def main():
                 meansamp = np.mean(samp, axis = -1)
                 plt.plot(grid, meansamp, color = 'dodgerblue', label = 'Mean')
                 plt.plot(grid, TP.exactSolution, color = 'orange', label = 'True Signal')
-                plt.xlabel('x')
+                #plt.xlabel('x')
                 plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
                 plt.legend()
@@ -334,7 +334,3 @@ def main():
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
     main() #Runs main method
-
-# %%
-
-# %%
