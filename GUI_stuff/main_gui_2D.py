@@ -63,7 +63,7 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-')], #key = 'Browse'
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
