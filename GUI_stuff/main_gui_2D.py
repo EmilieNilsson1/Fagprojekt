@@ -98,7 +98,7 @@ def main():
         [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
-        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = True, key='-OUTPUT_2D-')]
+        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
     ]
 
     # 2D plot tabs
