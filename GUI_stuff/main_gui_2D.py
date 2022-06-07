@@ -63,7 +63,9 @@ def main():
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
-        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
+        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
+        sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
+        sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
@@ -79,7 +81,8 @@ def main():
         [sg.pin(sg.Text('something about the priors - diff things', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Text('Set parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
-        [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
+        [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
+        place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
         [place(sg.Text('Prior std', font = small_font, key = '-PAR1_2D-', visible = True)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = True, size = (20,10))), 
         place(sg.InputText('0.1', key='-RIGHT1_2D-', visible = True, enable_events = True, size = (5,1)))],
@@ -499,35 +502,35 @@ def main():
             fig_agg5.draw()
 
              
+        if event == 'Uncer':
+            if values['Uncer'] == True:
+                try:
+                    plt.figure(1)
+                    axs[1,0].axis("off")
+                    axs[1,0].imshow(RED,cmap='autumn', alpha = std_stand)
+                    axs[1,0].set_title('Reconstructed image')
+                    fig_agg1.draw()
 
-        if values['Uncer']:
-            try:
-                plt.figure(1)
-                axs[1,0].axis("off")
-                axs[1,0].imshow(RED,cmap='autumn', alpha = std_stand)
-                axs[1,0].set_title('Reconstructed image')
-                fig_agg1.draw()
+                    plt.figure(4)
+                    plt.axis("off")
+                    plt.imshow(RED,cmap='autumn', alpha = std_stand)
+                    fig_agg4.draw()
+                except: pass
+            else:
+                try:
+                    plt.figure(1)
+                    axs[1,0].clear()
+                    axs[1,0].axis("off")
+                    axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
+                    axs[1,0].set_title('Reconstructed image')
+                    fig_agg1.draw()
 
-                plt.figure(4)
-                plt.axis("off")
-                plt.imshow(RED,cmap='autumn', alpha = std_stand)
-                fig_agg4.draw()
-            except: pass
-        else:
-            try:
-                plt.figure(1)
-                axs[1,0].clear()
-                axs[1,0].axis("off")
-                axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
-                axs[1,0].set_title('Reconstructed image')
-                fig_agg1.draw()
-
-                fig4.clear()
-                plt.figure(4)
-                xs.plot_mean()
-                plt.axis("off")
-                fig_agg4.draw()
-            except: pass
+                    fig4.clear()
+                    plt.figure(4)
+                    xs.plot_mean()
+                    plt.axis("off")
+                    fig_agg4.draw()
+                except: pass
 
         # Clicking info button: showing and removing information
         for i in range(iNum2D):
