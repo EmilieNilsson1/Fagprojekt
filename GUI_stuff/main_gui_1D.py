@@ -63,8 +63,9 @@ def main():
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'], readonly = True, key = '-TESTSIG-' , default_value='Gauss')],
-        [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
-        sg.T('0.05', key='-RIGHTn-', visible = True),sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',0))],
+        [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True),
+        sg.Input('0.05', key='-INPUT-NOISE-', visible = True, enable_events = True, size = (5,1)), 
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog[0]), key= ('-ITX-',0)))],
         [sg.Text('_'*120)],
         [sg.Text('Choose prior distribution', font =medium_font)],
@@ -89,7 +90,7 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',2))],
         [sg.pin(sg.Text('Choose size of confidance interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ', text_color='black', background_color='light yellow' , visible= bool(iTog[2]), key= ('-ITX-',2)))],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events = True, pad = (3, 10)),sg.Checkbox('Show confidence interval', default=True, key='PLOT-CONF', enable_events = True, pad = (3, 10))],
-        [sg.Button('Update', size=(10, 1), font=medium_font),
+        [sg.Button('Update', size=(10, 1), font=medium_font, enable_events = True, key = '-UPDATE-1D-'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP-', text_color = 'white', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT-')]
@@ -137,6 +138,9 @@ def main():
     window['-BCTYPE-'].update(visible = False)
     window['-FIGUP-'].update(visible = False)
 
+    # for input boxes
+    test_1D = [True, True, True, True, True]
+
     while True:
 
         # Read current events and values from GUI
@@ -148,8 +152,31 @@ def main():
         
         window.Element('-RIGHT1-').update(values['-SLIDER1-']) # updates slider values
         window.Element('-RIGHT2-').update(int(values['-SLIDER-SAMPLE-'])) 
-        window.Element('-RIGHTn-').update(values['-SLIDER-NOISE-'])
 
+
+        orig_col = window['-INPUT-NOISE-'].BackgroundColor
+
+        if isinstance(event,str):
+            if event in '-INPUT-NOISE-':
+                try:
+                    if float(values['-INPUT-NOISE-']) >= window.Element('-SLIDER-NOISE-').Range[0] and float(values['-INPUT-NOISE-'])<= window.Element('-SLIDER-NOISE-').Range[1]:
+                        window.Element('-SLIDER-NOISE-').update(value = values['-INPUT-NOISE-'])
+                        window.Element('-INPUT-NOISE-').update(background_color = orig_col)
+                        test_1D[0] = True
+                    else:
+                        window.Element('-SLIDER-NOISE-').update(value = 0.05)
+                        window.Element('-INPUT-NOISE-').update(background_color = 'red')
+                        test_1D[0] = False
+                except: 
+                    window.Element('-SLIDER-NOISE-').update(value = 0.05)
+                    window.Element('-INPUT-NOISE-').update(background_color = 'red')
+                    test_1D[0] = False
+
+            if event in '-SLIDER-NOISE-':
+                window.Element('-INPUT-NOISE-').update(values['-SLIDER-NOISE-'])
+                test_1D[0] = True
+                window.Element('-INPUT-NOISE-').update(background_color = orig_col)
+        
         # Select prior distribution
         # buttons change accordingly
         if event == '-GAUSSIAN-':
@@ -211,8 +238,18 @@ def main():
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
             window['-PAR1-'].update('Spread')
+            window['-PAR2-'].update(visible = False) # removes buttons if other prior was chosen first
+            window['-BCTYPE-'].update(visible = False)
             window['-FIGUP-'].update(visible = True)
             window['-FIGUP-'].update('Might take a while')
+
+        #Checking for errors in input boxes
+        if sum(test_1D) != 5:
+            window['-UPDATE-1D-'].update(disabled=True)
+            window['-UPDATE-1D-'].update(button_color='gray')
+        elif sum(test_1D) == 5:
+            window['-UPDATE-1D-'].update(disabled=False)
+            window['-UPDATE-1D-'].update(button_color=sg.theme_button_color())
 
         # Clicking info button: showing and removing information
         for i in range(iNum):
@@ -226,7 +263,7 @@ def main():
                     window[('-ITX-',j)].update(visible=bool(iTog[j]))
 
         # Clicked update button
-        if event in ('Update', None):
+        if event in ('-UPDATE-1D-', None):
 
             # Get values from input
             par1 = float(values['-SLIDER1-'])
