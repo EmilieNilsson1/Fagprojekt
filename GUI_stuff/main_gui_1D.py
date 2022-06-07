@@ -62,7 +62,7 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'],key = '-TESTSIG-' , default_value='Gauss')],
+        [sg.Combo(['Gauss', 'sinc','vonMises','square','hat','bumps', 'derivGauss'], readonly = True, key = '-TESTSIG-' , default_value='Gauss')],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events = True, disable_number_display=True), 
         sg.T('0.05', key='-RIGHTn-', visible = True),sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog[0]), key= ('-ITX-',0)))],
@@ -81,8 +81,8 @@ def main():
         [sg.Text('_'*120)],
         [sg.Text('Set plot settings', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
-        sg.Slider(range=(50, 3000), default_value=100, resolution=50, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
-        sg.T('1000', key='-RIGHT2-'),
+        sg.Slider(range=(10, 3000), default_value=100, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events = True, disable_number_display=True),
+        sg.T('100', key='-RIGHT2-'),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB-',1))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.', text_color='black', background_color='light yellow' , visible= bool(iTog[1]), key= ('-ITX-',1)))],
         [sg.Text('Confidence interval', font = small_font), sg.InputText(key = '-TEXT-CONF-', size =(10,10), default_text=90),
@@ -211,7 +211,8 @@ def main():
             window['-SLIDER1-'].update(visible=True)
             window['-RIGHT1-'].update(visible=True)
             window['-PAR1-'].update('Spread')
-            window['-FIGUP-'].update(visible = False)
+            window['-FIGUP-'].update(visible = True)
+            window['-FIGUP-'].update('Might take a while')
 
         # Clicking info button: showing and removing information
         for i in range(iNum):
