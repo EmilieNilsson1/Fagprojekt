@@ -6,6 +6,8 @@ from email.policy import default
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+import matplotlib.cm
+import matplotlib.colors as mpc
 import base64
 import io
 from PIL import Image
@@ -57,19 +59,22 @@ def main():
 
     # initialising toggles for info buttons:
     # number of info buttons
-    iNum2D = 4
+    iNum2D = 5
     iTog2D = np.full((iNum2D,) , False )
 
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
+        [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
-        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
+        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)), 
+        sg.Text('Image Dimension: ( , )', font=small_font, key='-ImDim-', visible = False)],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
@@ -99,7 +104,7 @@ def main():
         [sg.Checkbox('Add uncertainty overlay', default=False, key='Uncer', enable_events = True, font = small_font),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
         [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
-        [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
+        [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
@@ -303,11 +308,13 @@ def main():
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
             window['file_error'].update(visible = False)
+            window['-ImDim-'].update(visible = True)
         # if isinstance(event, str):  
         if event == '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
             print('')
             window['file_error'].update(visible = False)
+            window['-ImDim-'].update(visible = False)
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
             window['file_error'].update(visible = False)
@@ -391,6 +398,14 @@ def main():
             window['up2d'].update(disabled=False)
             window['up2d'].update(button_color=sg.theme_button_color())
 
+        ## Shows image dimensions
+        if values['-FILE-'] != '':
+            filename = values["-FILE-"]
+            if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
+                image = Image.open(values["-FILE-"]).convert('RGB')
+                window['-ImDim-'].update(value = f"Original Image Dimensions: %s" % (image.size,))
+
+
         if event == '-FILE-':
             filename = values["-FILE-"]
             if (os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2) or filename == '':
@@ -450,6 +465,7 @@ def main():
                     sz = int(values['-SLIDER-SIZE_2D-'])
                     
                     image = Image.open(values["-FILE-"]).convert('RGB')
+                    window['-ImDim-'].update(value = image.size)
                     image = image.resize((sz,sz))
                     image = cuqi.data.rgb2gray(image)
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = image, noise_std = n_std)
@@ -477,7 +493,6 @@ def main():
                     window['up2d'].update(disabled = True)
                     window['up2d'].update(button_color = 'gray')
 
-
     # Clicked update button
         #if event in ('Update', None):
         if event in ('up2d', None):
@@ -501,8 +516,8 @@ def main():
                 if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                     window['file_error'].update(visible = False)
                     image = Image.open(values["-FILE-"]).convert('RGB')
-                    image = image.resize((sz,sz))
-                    sig = cuqi.data.rgb2gray(image)
+                    im = image.resize((sz,sz))
+                    sig = cuqi.data.rgb2gray(im)
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
                 else:
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = 'satellite', noise_std = n_std)
@@ -565,7 +580,7 @@ def main():
             axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
             axs[1,0].set_title('Reconstructed image')
 
-            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)), cmap = 'gray')
+            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)))
             axs[1,1].set_title('Uncertainty')
             
             fig_agg1.draw()
@@ -590,7 +605,9 @@ def main():
 
             fig5.clear()
             plt.figure(5)
-            xs.plot_std()
+            uncPlt = plt.imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)))
+            cBarUnc = plt.colorbar(uncPlt,fraction=0.046, pad=0.04)
+            cBarUnc.set_label('std')
             plt.axis("off")
             fig_agg5.draw()
 
@@ -607,6 +624,8 @@ def main():
                     plt.figure(4)
                     plt.axis("off")
                     plt.imshow(RED,cmap='autumn', alpha = std_stand)
+                    cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
+                    cBarRed.set_label('std',loc='center')
                     fig_agg4.draw()
                 except: pass
             else:
