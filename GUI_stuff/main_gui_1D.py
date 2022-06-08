@@ -170,6 +170,9 @@ def main():
 
         orig_col = window['-INPUT-NOISE-'].BackgroundColor
 
+        if event and not(Dist == "Laplace_diff") and not(Dist == "Cauchy_diff") and not(Dist == 'Uniform'):
+            window['-FIGUP-'].update(visible = False)
+
         if isinstance(event, str):
             # noise input box
             if event in '-INPUT-NOISE-':
@@ -290,7 +293,7 @@ def main():
             plt.subplot(211)
             
             plt.plot(grid, TP.data/max(TP.data),color='green') 
-            plt.legend(['Measured data'], loc=1)
+            plt.legend(['Initial signal'], loc=1)
             fig_agg.draw()
             
             # try:
@@ -431,7 +434,7 @@ def main():
                 fig.clear()
                 plt.subplot(211)
                 plt.plot(grid, TP.data/max(TP.data),color='green')  # Noisy data
-                plt.legend(['Measured data'], loc=1)
+                plt.legend(['Initial signal'], loc=1)
                 plt.subplot(212)
                 xs.plot_ci(conf)  # Solution
                 fig_agg.draw()
