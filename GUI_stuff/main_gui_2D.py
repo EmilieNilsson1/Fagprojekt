@@ -191,6 +191,7 @@ def main():
 
     test = [True, True, True, True, True]
     Dist = "GaussianCov"
+    updated = False
    # Dist = values['-DIST_2D-'] # setting Gaussian as default
     while True:
 
