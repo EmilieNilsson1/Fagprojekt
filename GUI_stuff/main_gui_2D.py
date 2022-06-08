@@ -319,6 +319,8 @@ def main():
             print('')
             window['file_error'].update(visible = False)
             window['-IB_2D-',5].update(visible = False)
+            iTog2D[5] = False
+            window['-ITX_2D-',5].update(visible = bool(iTog2D[5]))
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
             window['file_error'].update(visible = False)
@@ -404,6 +406,11 @@ def main():
             if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                 image = Image.open(values["-FILE-"]).convert('RGB')
                 window['-ITX_2D-',5].update(value = f"Original Image Dimensions: %s" % (image.size,))
+            else:
+                window['-IB_2D-',5].update(visible = False)
+                iTog2D[5] = False
+                window['-ITX_2D-',5].update(visible = bool(iTog2D[5]))
+
 
 
         if event == '-FILE-':
