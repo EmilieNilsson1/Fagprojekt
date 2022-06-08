@@ -394,9 +394,9 @@ class Samples(object):
                     lex = exact.plot(*args,**kwargs)
                 else:
                     lex = self.geometry.plot(exact,*args,**kwargs)
-                plt.legend([lmn[0], lex[0], lci],["Mean","Exact","Credibility Interval"])
+                plt.legend([lmn[0], lex[0], lci],["Mean","True","Confidence Interval"])
             else:
-                plt.legend([lmn[0], lci],["Mean","Credibility Interval"])
+                plt.legend([lmn[0], lci],["Mean","Confidence Interval"])
 
     def diagnostics(self):
         # Geweke test
