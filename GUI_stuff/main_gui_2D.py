@@ -59,7 +59,7 @@ def main():
 
     # initialising toggles for info buttons:
     # number of info buttons
-    iNum2D = 5
+    iNum2D = 6
     iTog2D = np.full((iNum2D,) , False )
 
     options_column = [
@@ -73,8 +73,9 @@ def main():
         [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
-        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)), 
-        sg.Text('Image Dimension: ( , )', font=small_font, key='-ImDim-', visible = False)],
+        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',5))],
+        [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
@@ -625,7 +626,7 @@ def main():
                     plt.axis("off")
                     plt.imshow(RED,cmap='autumn', alpha = std_stand)
                     cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
-                    cBarRed.set_label('std',loc='center')
+                    cBarRed.set_label('std',loc='center',rotation=360)
                     fig_agg4.draw()
                 except: pass
             else:
