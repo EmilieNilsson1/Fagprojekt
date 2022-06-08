@@ -73,6 +73,7 @@ def main():
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 0)))],
+        [sg.Button('Show initial signal', key = '-SHOW1D-')],
         [sg.Text('_'*120)],
         [sg.Text('Choose prior distribution', font=medium_font)],
         [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (150, 300)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
@@ -276,6 +277,29 @@ def main():
                 window.Element(
                     '-INPUT-CONF-').update(background_color=orig_col)
 
+        # show initial signal
+        if event == '-SHOW1D-':
+            n_std = float(values['-SLIDER-NOISE-'])
+            sig = values['-TESTSIG-']
+            TP = cuqi.testproblem.Deconvolution1D(phantom=sig, noise_std=n_std)
+            grid = np.linspace(0, 128, 128)
+
+            plt.subplot(212).clear()
+            plt.subplot(212).axis('off')
+            plt.subplot(211).clear()
+            plt.subplot(211)
+            
+            plt.plot(grid, TP.data/max(TP.data),color='green') 
+            plt.legend(['Measured data'], loc=1)
+            fig_agg.draw()
+            
+            # try:
+            #     plt.subplot(212)
+            #     plt.clf()
+            #     fig_agg.draw()
+            # except: pass
+            
+
         # Select prior distribution
         # buttons change accordingly
         if event == '-GAUSSIAN-':
@@ -406,7 +430,7 @@ def main():
                 grid = np.linspace(0, 128, 128)
                 fig.clear()
                 plt.subplot(211)
-                plt.plot(grid, TP.data/max(TP.data))  # Noisy data
+                plt.plot(grid, TP.data/max(TP.data),color='green')  # Noisy data
                 plt.legend(['Measured data'], loc=1)
                 plt.subplot(212)
                 xs.plot_ci(conf)  # Solution
@@ -418,52 +442,53 @@ def main():
         # Show true signal
         show_true = values['TRUE_SIGNAL']
         show_ci = values['PLOT-CONF']
-        if not show_ci and not show_true:  # plot mean
-            try:
-                plt.subplot(212).clear()
-                samp = xs.samples
-                meansamp = np.mean(samp, axis=-1)
-                plt.plot(grid, meansamp, color='dodgerblue', label='Mean')
-                # plt.xlabel('x')
-                #plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                plt.legend()
-                fig_agg.draw()
-            except:
-                pass
-        else:  # plot_ci
-            try:
-                samp = xs.samples
-                plt.subplot(212).clear()
-                xs.plot_ci(conf)
-                #plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                fig_agg.draw()
-            except:
-                pass
-        if show_true and show_ci:
-            try:
-                plt.subplot(212).clear()
-                xs.plot_ci(conf, exact=TP.exactSolution)
-                #plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                fig_agg.draw()
-            except:
-                pass
-        if show_true and not show_ci:
-            try:
-                plt.subplot(212).clear()
-                samp = xs.samples
-                meansamp = np.mean(samp, axis=-1)
-                plt.plot(grid, meansamp, color='dodgerblue', label='Mean')
-                plt.plot(grid, TP.exactSolution, color='orange', label='True Signal')
-                # plt.xlabel('x')
-                #plt.ylim(-0.25, 1.25)
-                plt.xlim(0, 128)
-                plt.legend()
-                fig_agg.draw()
-            except:
-                pass
+        if (event in 'TRUE_SIGNAL') or (event in 'PLOT-CONF') or (event in ('-UPDATE-1D-', None)):
+            if not show_ci and not show_true:  # plot mean
+                try:
+                    plt.subplot(212).clear()
+                    samp = xs.samples
+                    meansamp = np.mean(samp, axis=-1)
+                    plt.plot(grid, meansamp, label='Mean')
+                    # plt.xlabel('x')
+                    #plt.ylim(-0.25, 1.25)
+                    plt.xlim(0, 128)
+                    plt.legend()
+                    fig_agg.draw()
+                except:
+                    pass
+            else:  # plot_ci
+                try:
+                    samp = xs.samples
+                    plt.subplot(212).clear()
+                    xs.plot_ci(conf)
+                    #plt.ylim(-0.25, 1.25)
+                    plt.xlim(0, 128)
+                    fig_agg.draw()
+                except:
+                    pass
+            if show_true and show_ci:
+                try:
+                    plt.subplot(212).clear()
+                    xs.plot_ci(conf, exact=TP.exactSolution)
+                    #plt.ylim(-0.25, 1.25)
+                    plt.xlim(0, 128)
+                    fig_agg.draw()
+                except:
+                    pass
+            if show_true and not show_ci:
+                try:
+                    plt.subplot(212).clear()
+                    samp = xs.samples
+                    meansamp = np.mean(samp, axis=-1)
+                    plt.plot(grid, meansamp, label='Mean')
+                    plt.plot(grid, TP.exactSolution, color='orange', label='True Signal')
+                    # plt.xlabel('x')
+                    #plt.ylim(-0.25, 1.25)
+                    plt.xlim(0, 128)
+                    plt.legend()
+                    fig_agg.draw()
+                except:
+                    pass
 
         # old show true stuff
         # if show_true:
