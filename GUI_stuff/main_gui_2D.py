@@ -606,8 +606,9 @@ def main():
             fig5.clear()
             plt.figure(5)
             uncPlt = plt.imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)))
+            plt.title('Sample standard deviation')
             cBarUnc = plt.colorbar(uncPlt,fraction=0.046, pad=0.04)
-            cBarUnc.set_label('std')
+            cBarUnc.ax.set_xlabel('std')
             plt.axis("off")
             fig_agg5.draw()
 
@@ -625,7 +626,7 @@ def main():
                     plt.axis("off")
                     plt.imshow(RED,cmap='autumn', alpha = std_stand)
                     cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
-                    cBarRed.set_label('std',loc='center',rotation=360)
+                    cBarRed.ax.set_xlabel('std')
                     fig_agg4.draw()
                 except: pass
             else:
