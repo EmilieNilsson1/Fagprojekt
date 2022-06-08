@@ -64,12 +64,10 @@ def main():
     medium_font = 'Courier 16'
     small_font = 'Helvetica 12'
     options_column = [
-        [sg.Text('CUQIpy Interactive Demo', size=(40, 3),
-                 justification='center', font=big_font)],
         [sg.Text('Test signal', font=medium_font)],
         [sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
                    'derivGauss'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
-        [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
+        [sg.Text('Noise std:', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
          sg.Input('0.05', key='-INPUT-NOISE-', visible=True,
                   enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 0))],
@@ -110,8 +108,8 @@ def main():
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 2))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ',
                         text_color='black', background_color='light yellow', visible=bool(iTog[2]), key=('-ITX-', 2)))],
-        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events=True, pad=(3, 10)), sg.Checkbox(
-            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10))],
+        [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox(
+            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10), font=small_font)],
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key='-UPDATE-1D-'),
          sg.Button('Exit', size=(10, 1), font=medium_font),
          sg.Text('Figure updated', visible=False, key='-FIGUP-', text_color='white', font=medium_font, enable_events=True)],
@@ -131,10 +129,9 @@ def main():
          sg.Column(plot_column), ]
     ]
     options_column2D = [
-        [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
         [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
-        sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
+        sg.Text("Or choose a file ", key = 'CF', visible = True, font=small_font), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
@@ -144,7 +141,7 @@ def main():
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), visible = False, key = ('-IB_2D-',5))],
         [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
-        [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
+        [sg.Text('Noise std:',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
@@ -174,7 +171,7 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
         [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
-        sg.Button('Exit2d', size=(10, 1), font=medium_font),
+        sg.Button('Exit', size=(10, 1), font=medium_font, key = '-EXIT_2D-'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = False, visible = False, key='-OUTPUT_2D-', enable_events= True)]
     ]
@@ -217,7 +214,9 @@ def main():
         sg.Column(plot_column2D),]
     ]
 
-    layout = [[sg.TabGroup([[sg.Tab('1D convolution', tab1_layout, key='Tab1', title_color = 'black'),
+    layout = [
+        [sg.Text('CUQIpy Interactive Demo', size=(30, 2),justification='center', font=big_font)],
+        [sg.TabGroup([[sg.Tab('1D convolution', tab1_layout, key='Tab1', title_color = 'black'),
                          sg.Tab('2D convolution', tab2_layout, key = 'Tab2')]],
                        key='-TABS-', title_color='black',
                        selected_title_color='white', tab_location='topleft', font = 'Helvetica 16')]]
@@ -293,14 +292,17 @@ def main():
 
     # for input boxes
     test_1D = [True, True, True, True]
-    Tab1 = True
-    Tab2 = False
     while True: 
+
         event, values = window.read()
         active_tab = window['-TABS-'].Get()
-        print(active_tab)
+
+        if event == sg.WIN_CLOSED:
+            break
+        
+        # 1D
         if active_tab == 'Tab1':
-            #1D
+
             # Clicked exit button
             if event in ('Exit', None):
                 exit()
@@ -642,10 +644,10 @@ def main():
                     except:
                         pass
     
-#2D
+        #2D
         if active_tab == 'Tab2':
             # Clicked exit button
-            if event in ('Exit2d', None):
+            if event == '-EXIT_2D-':
                 exit()
             
             #window['-OUTPUT-'].update(reroute_stdout = False)
@@ -924,9 +926,9 @@ def main():
                     if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                     
                         sz = int(values['-SLIDER-SIZE_2D-'])
+                        n_std = float(values['-SLIDER-NOISE_2D-'])
                         
                         image = Image.open(values["-FILE-"]).convert('RGB')
-                        window['-ImDim-'].update(value = image.size)
                         image = image.resize((sz,sz))
                         image = cuqi.data.rgb2gray(image)
                         TP_2D = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = image, noise_std = n_std)
@@ -1117,8 +1119,8 @@ def main():
                                 continue
                             iTog2D[j] = False
                             window[('-ITX_2D-',j)].update(visible=bool(iTog2D[j])) 
-                
-
+    
+    window.close()
 
 if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
