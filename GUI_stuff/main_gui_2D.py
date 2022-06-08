@@ -201,6 +201,9 @@ def main():
             exit()
          
         orig_col = window['-RIGHT_SIZE_2D-'].BackgroundColor
+
+        if event:
+            window['-FIGUP_2D-'].update(visible = False)
         
         
         if isinstance(event, str): 
@@ -368,8 +371,6 @@ def main():
             window['-SLIDER1_2D-'].update(visible=False)
             window['-RIGHT1_2D-'].update(visible=False)
 
-            window['-FIGUP_2D-'].update(visible = True)
-            window['-FIGUP_2D-'].update('Might take a while')
         elif event == '-CAUCHY_2D-':
             Dist = "Cauchy_diff"
             test[1] = True
@@ -388,8 +389,6 @@ def main():
             window['-RIGHT1_2D-'].update(visible=False)
             window['-PAR1_2D-'].update(visible = False)
 
-            window['-FIGUP_2D-'].update(visible = True)
-            window['-FIGUP_2D-'].update('Might take a while')
         
         if sum(test) != 5:
             window['up2d'].update(disabled=True)
