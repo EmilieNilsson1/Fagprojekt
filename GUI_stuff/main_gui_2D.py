@@ -73,7 +73,8 @@ def main():
         [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
-        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
+        sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)), 
+        sg.Text('Image Dimension: ( , )', font=small_font, key='-ImDim-', visible = False)],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
@@ -307,11 +308,13 @@ def main():
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
             window['file_error'].update(visible = False)
+            window['-ImDim-'].update(visible = True)
         # if isinstance(event, str):  
         if event == '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
             print('')
             window['file_error'].update(visible = False)
+            window['-ImDim-'].update(visible = False)
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
             window['file_error'].update(visible = False)
@@ -395,6 +398,14 @@ def main():
             window['up2d'].update(disabled=False)
             window['up2d'].update(button_color=sg.theme_button_color())
 
+        ## Shows image dimensions
+        if values['-FILE-'] != '':
+            filename = values["-FILE-"]
+            if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
+                image = Image.open(values["-FILE-"]).convert('RGB')
+                window['-ImDim-'].update(value = f"Original Image Dimensions: %s" % (image.size,))
+
+
         if event == '-FILE-':
             filename = values["-FILE-"]
             if (os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2) or filename == '':
@@ -454,6 +465,7 @@ def main():
                     sz = int(values['-SLIDER-SIZE_2D-'])
                     
                     image = Image.open(values["-FILE-"]).convert('RGB')
+                    window['-ImDim-'].update(value = image.size)
                     image = image.resize((sz,sz))
                     image = cuqi.data.rgb2gray(image)
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = image, noise_std = n_std)
@@ -481,7 +493,6 @@ def main():
                     window['up2d'].update(disabled = True)
                     window['up2d'].update(button_color = 'gray')
 
-
     # Clicked update button
         #if event in ('Update', None):
         if event in ('up2d', None):
@@ -505,8 +516,8 @@ def main():
                 if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                     window['file_error'].update(visible = False)
                     image = Image.open(values["-FILE-"]).convert('RGB')
-                    image = image.resize((sz,sz))
-                    sig = cuqi.data.rgb2gray(image)
+                    im = image.resize((sz,sz))
+                    sig = cuqi.data.rgb2gray(im)
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
                 else:
                     TP = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = 'satellite', noise_std = n_std)
