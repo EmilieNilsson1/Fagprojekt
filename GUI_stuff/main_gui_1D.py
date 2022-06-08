@@ -100,14 +100,14 @@ def main():
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[1]), key=('-ITX-', 1)))],
         [sg.Text('Confidence interval', font=small_font),
-         sg.Slider(range=(0.01, 1), default_value=0.95, resolution=0.05, size=(20, 10), orientation='h', key='-SLIDER-CONF-', enable_events=True, disable_number_display=True),
-         sg.Input('0.95', key='-INPUT-CONF-', visible=True, enable_events=True, size=(5, 1)),
+         sg.Slider(range=(0, 100), default_value=95, resolution=5, size=(20, 10), orientation='h', key='-SLIDER-CONF-', enable_events=True, disable_number_display=True),
+         sg.Input('95', key='-INPUT-CONF-', visible=True, enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 2))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ',
                         text_color='black', background_color='light yellow', visible=bool(iTog[2]), key=('-ITX-', 2)))],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events=True, pad=(3, 10)), sg.Checkbox(
             'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10))],
-        [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key='-UPDATE-1D-'),
+        [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key='-UPDATE-1D-'),
          sg.Button('Exit', size=(10, 1), font=medium_font),
          sg.Text('Figure updated', visible=False, key='-FIGUP-', text_color='white', font=medium_font, enable_events=True)],
         [sg.Multiline(size=(20, 1.5), no_scrollbar=True, auto_refresh=True,
@@ -225,7 +225,7 @@ def main():
             # sample input box
             if event in '-INPUT-SAMPLE-':
                 try:
-                    if float(values['-INPUT-SAMPLE-']) >= window.Element('-SLIDER-SAMPLE-').Range[0] and float(values['-INPUT-SAMPLE-']) <= window.Element('-SLIDER-SAMPLE-').Range[1]:
+                    if int(values['-INPUT-SAMPLE-']) >= window.Element('-SLIDER-SAMPLE-').Range[0] and int(values['-INPUT-SAMPLE-']) <= window.Element('-SLIDER-SAMPLE-').Range[1]:
                         window.Element(
                             '-SLIDER-SAMPLE-').update(value=values['-INPUT-SAMPLE-'])
                         window.Element(
@@ -244,7 +244,7 @@ def main():
 
             if event in '-SLIDER-SAMPLE-':
                 window.Element(
-                    '-INPUT-SAMPLE-').update(values['-SLIDER-SAMPLE-'])
+                    '-INPUT-SAMPLE-').update(int(values['-SLIDER-SAMPLE-']))
                 test_1D[2] = True
                 window.Element(
                     '-INPUT-SAMPLE-').update(background_color=orig_col)
@@ -259,19 +259,19 @@ def main():
                             '-INPUT-CONF-').update(background_color=orig_col)
                         test_1D[3] = True
                     else:
-                        window.Element('-SLIDER-CONF-').update(value=0.95)
+                        window.Element('-SLIDER-CONF-').update(value=95)
                         window.Element(
                             '-INPUT-CONF-').update(background_color='red')
                         test_1D[3] = False
                 except:
-                    window.Element('-SLIDER-CONF-').update(value=0.95)
+                    window.Element('-SLIDER-CONF-').update(value=95)
                     window.Element(
                         '-INPUT-CONF-').update(background_color='red')
                     test_1D[3] = False
 
             if event in '-SLIDER-CONF-':
                 window.Element(
-                    '-INPUT-CONF-').update(values['-SLIDER-CONF-'])
+                    '-INPUT-CONF-').update(int(values['-SLIDER-CONF-']))
                 test_1D[3] = True
                 window.Element(
                     '-INPUT-CONF-').update(background_color=orig_col)
@@ -376,8 +376,7 @@ def main():
             TP = cuqi.testproblem.Deconvolution1D(phantom=sig, noise_std=n_std)
 
             if Dist == "Gaussian":
-                TP.prior = getattr(cuqi.distribution, Dist)(
-                    np.zeros(128), par1)
+                TP.prior = getattr(cuqi.distribution, Dist)(np.zeros(128), par1)
 
             if Dist == "Laplace_diff":
                 TP.prior = getattr(cuqi.distribution, Dist)(location=np.zeros(128), scale=par1, bc_type=par2)
