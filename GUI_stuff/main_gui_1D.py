@@ -20,12 +20,9 @@ currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
-#import cuqi
-# Add PySimpeGUI
-
+import cuqi
 
 # Convenience method to draw figure
-
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -88,7 +85,7 @@ def main():
         [sg.pin(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
          sg.pin(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, orientation='h',
                           enable_events=True, disable_number_display=True, key='-SLIDER1-', visible=False, size=(20, 10))),
-         sg.Input('0.05', key='-INPUT-PAR1-', visible=True,
+         sg.Input('0.1', key='-INPUT-PAR1-', visible=True,
                   enable_events=True, size=(5, 1))],
         [sg.pin(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
          sg.pin(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', visible=False, size=(10, 1)))],
@@ -97,16 +94,14 @@ def main():
         [sg.Text('Sample size', font=small_font),
          sg.Slider(range=(10, 3000), default_value=100, resolution=10, size=(
              20, 10), orientation='h', key='-SLIDER-SAMPLE-', enable_events=True, disable_number_display=True),
-         sg.Input('0.05', key='-INPUT-SAMPLE-', visible=True,
+         sg.Input('100', key='-INPUT-SAMPLE-', visible=True,
                   enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 1))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[1]), key=('-ITX-', 1)))],
         [sg.Text('Confidence interval', font=small_font),
-         sg.Slider(range=(0.01, 1), default_value=0.95, resolution=0.05, size=(
-             20, 10), orientation='h', key='-SLIDER-CONF-', enable_events=True, disable_number_display=True),
-         sg.Input('0.05', key='-INPUT-CONF-', visible=True,
-                  enable_events=True, size=(5, 1)),
+         sg.Slider(range=(0.01, 1), default_value=0.95, resolution=0.05, size=(20, 10), orientation='h', key='-SLIDER-CONF-', enable_events=True, disable_number_display=True),
+         sg.Input('0.95', key='-INPUT-CONF-', visible=True, enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 2))],
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ',
                         text_color='black', background_color='light yellow', visible=bool(iTog[2]), key=('-ITX-', 2)))],
@@ -209,22 +204,21 @@ def main():
                             '-SLIDER1-').update(value=values['-INPUT-PAR1-'])
                         window.Element(
                             '-INPUT-PAR1-').update(background_color=orig_col)
-                        test_1D[0] = True
+                        test_1D[1] = True
                     else:
-                        window.Element('-SLIDER1-').update(value=0.05)
+                        window.Element('-SLIDER1-').update(value=0.1)
                         window.Element(
                             '-INPUT-PAR1-').update(background_color='red')
-                        test_1D[0] = False
+                        test_1D[1] = False
                 except:
-                    window.Element('-SLIDER1-').update(value=0.05)
-                    window.Element(
-                        '-INPUT-PAR1-').update(background_color='red')
-                    test_1D[0] = False
+                    window.Element('-SLIDER1-').update(value=0.1)
+                    window.Element('-INPUT-PAR1-').update(background_color='red')
+                    test_1D[1] = False
 
             if event in '-SLIDER1-':
                 window.Element(
                     '-INPUT-PAR1-').update(values['-SLIDER1-'])
-                test_1D[0] = True
+                test_1D[1] = True
                 window.Element(
                     '-INPUT-PAR1-').update(background_color=orig_col)
 
@@ -236,22 +230,22 @@ def main():
                             '-SLIDER-SAMPLE-').update(value=values['-INPUT-SAMPLE-'])
                         window.Element(
                             '-INPUT-SAMPLE-').update(background_color=orig_col)
-                        test_1D[0] = True
+                        test_1D[2] = True
                     else:
-                        window.Element('-SLIDER-SAMPLE-').update(value=0.05)
+                        window.Element('-SLIDER-SAMPLE-').update(value=100)
                         window.Element(
                             '-INPUT-SAMPLE-').update(background_color='red')
-                        test_1D[0] = False
+                        test_1D[2] = False
                 except:
-                    window.Element('-SLIDER-SAMPLE-').update(value=0.05)
+                    window.Element('-SLIDER-SAMPLE-').update(value=100)
                     window.Element(
                         '-INPUT-SAMPLE-').update(background_color='red')
-                    test_1D[0] = False
+                    test_1D[2] = False
 
             if event in '-SLIDER-SAMPLE-':
                 window.Element(
                     '-INPUT-SAMPLE-').update(values['-SLIDER-SAMPLE-'])
-                test_1D[0] = True
+                test_1D[2] = True
                 window.Element(
                     '-INPUT-SAMPLE-').update(background_color=orig_col)
 
@@ -263,22 +257,22 @@ def main():
                             '-SLIDER-CONF-').update(value=values['-INPUT-CONF-'])
                         window.Element(
                             '-INPUT-CONF-').update(background_color=orig_col)
-                        test_1D[0] = True
+                        test_1D[3] = True
                     else:
-                        window.Element('-SLIDER-CONF-').update(value=0.05)
+                        window.Element('-SLIDER-CONF-').update(value=0.95)
                         window.Element(
                             '-INPUT-CONF-').update(background_color='red')
-                        test_1D[0] = False
+                        test_1D[3] = False
                 except:
-                    window.Element('-SLIDER-CONF-').update(value=0.05)
+                    window.Element('-SLIDER-CONF-').update(value=0.95)
                     window.Element(
                         '-INPUT-CONF-').update(background_color='red')
-                    test_1D[0] = False
+                    test_1D[3] = False
 
             if event in '-SLIDER-CONF-':
                 window.Element(
                     '-INPUT-CONF-').update(values['-SLIDER-CONF-'])
-                test_1D[0] = True
+                test_1D[3] = True
                 window.Element(
                     '-INPUT-CONF-').update(background_color=orig_col)
 
@@ -286,8 +280,7 @@ def main():
         # buttons change accordingly
         if event == '-GAUSSIAN-':
             Dist = "Gaussian"
-            window['PRIOR_TEXT'].update(
-                'Set parameters for gaussian distribution')
+            window['PRIOR_TEXT'].update('Set parameters for gaussian distribution')
             # window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
             window['-GAUSSIAN-'].update(button_color=(None, 'green'))
             window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -302,8 +295,7 @@ def main():
             window['-FIGUP-'].update(visible=False)
         elif event == '-LAPLACE-':
             Dist = "Laplace_diff"
-            window['PRIOR_TEXT'].update(
-                'Set parameters for laplace distribution')
+            window['PRIOR_TEXT'].update('Set parameters for laplace distribution')
             #window['-LAPLACE-'].update(button_color='white on green')
             window['-LAPLACE-'].update(button_color=(None, 'green'))
             window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -319,8 +311,7 @@ def main():
             window['-FIGUP-'].update('Might take a while')
         elif event == '-CAUCHY-':
             Dist = "Cauchy_diff"
-            window['PRIOR_TEXT'].update(
-                'Set parameters for cauchy distribution')
+            window['PRIOR_TEXT'].update('Set parameters for cauchy distribution')
             # 'white on green')
             window['-CAUCHY-'].update(button_color=(None, 'green'))
             window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -338,8 +329,7 @@ def main():
             Dist == 'Uniform'
             # 'white on green')
             window['-UNI-'].update(button_color=(None, 'green'))
-            window['PRIOR_TEXT'].update(
-                'Set parameters for uniform distribution')
+            window['PRIOR_TEXT'].update('Set parameters for uniform distribution')
             window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
             window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -390,13 +380,11 @@ def main():
                     np.zeros(128), par1)
 
             if Dist == "Laplace_diff":
-                TP.prior = getattr(cuqi.distribution, Dist)(
-                    location=np.zeros(128), scale=par1, bc_type=par2)
+                TP.prior = getattr(cuqi.distribution, Dist)(location=np.zeros(128), scale=par1, bc_type=par2)
                 window['-OUTPUT-'].update(visible=True)
 
             if Dist == "Cauchy_diff":
-                TP.prior = getattr(cuqi.distribution, Dist)(
-                    location=np.zeros(128), scale=par1, bc_type=par2)
+                TP.prior = getattr(cuqi.distribution, Dist)(location=np.zeros(128), scale=par1, bc_type=par2)
                 window['-OUTPUT-'].update(visible=True)
 
             if Dist == "Uniform":
@@ -469,8 +457,7 @@ def main():
                 samp = xs.samples
                 meansamp = np.mean(samp, axis=-1)
                 plt.plot(grid, meansamp, color='dodgerblue', label='Mean')
-                plt.plot(grid, TP.exactSolution,
-                         color='orange', label='True Signal')
+                plt.plot(grid, TP.exactSolution, color='orange', label='True Signal')
                 # plt.xlabel('x')
                 #plt.ylim(-0.25, 1.25)
                 plt.xlim(0, 128)
