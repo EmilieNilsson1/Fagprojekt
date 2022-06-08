@@ -6,6 +6,8 @@ from email.policy import default
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+import matplotlib.cm
+import matplotlib.colors as mpc
 import base64
 import io
 from PIL import Image
@@ -63,7 +65,7 @@ def main():
     options_column = [
         [sg.Text('CUQIpy Interactive Demo', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
@@ -567,7 +569,7 @@ def main():
             axs[1,0].imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
             axs[1,0].set_title('Reconstructed image')
 
-            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)), cmap = 'gray')
+            axs[1,1].imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)))
             axs[1,1].set_title('Uncertainty')
             
             fig_agg1.draw()
@@ -592,7 +594,9 @@ def main():
 
             fig5.clear()
             plt.figure(5)
-            xs.plot_std()
+            uncPlt = plt.imshow(np.reshape(np.std(xs.samples,axis=-1), (-1, sz)))
+            cBarUnc = plt.colorbar(uncPlt,fraction=0.046, pad=0.04)
+            cBarUnc.set_label('std')
             plt.axis("off")
             fig_agg5.draw()
 
@@ -609,6 +613,8 @@ def main():
                     plt.figure(4)
                     plt.axis("off")
                     plt.imshow(RED,cmap='autumn', alpha = std_stand)
+                    cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
+                    cBarRed.set_label('std',loc='center')
                     fig_agg4.draw()
                 except: pass
             else:
