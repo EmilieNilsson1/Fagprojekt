@@ -60,7 +60,7 @@ def main():
         [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
         [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
         [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted and added noise to simulate the measurement of real life data', font=small_font)],
-        [sg.Text('From this deconvuluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
+        [sg.Text('From this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
         [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
         [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
         [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
