@@ -74,7 +74,7 @@ def main():
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
-        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',5))],
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), visible = False, key = ('-IB_2D-',5))],
         [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
         [sg.Text('Noise std:'), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
@@ -312,13 +312,13 @@ def main():
         if event == '-FILE-':
             window['-TESTSIG_2D-'].update(value = '')
             window['file_error'].update(visible = False)
-            window['-ImDim-'].update(visible = True)
+            window['-IB_2D-',5].update(visible = True)
         # if isinstance(event, str):  
         if event == '-TESTSIG_2D-':
             window['-FILE-'].update(value = '')
             print('')
             window['file_error'].update(visible = False)
-            window['-ImDim-'].update(visible = False)
+            window['-IB_2D-',5].update(visible = False)
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
             window['file_error'].update(visible = False)
@@ -403,7 +403,7 @@ def main():
             filename = values["-FILE-"]
             if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                 image = Image.open(values["-FILE-"]).convert('RGB')
-                window['-ImDim-'].update(value = f"Original Image Dimensions: %s" % (image.size,))
+                window['-ITX_2D-',5].update(value = f"Original Image Dimensions: %s" % (image.size,))
 
 
         if event == '-FILE-':
