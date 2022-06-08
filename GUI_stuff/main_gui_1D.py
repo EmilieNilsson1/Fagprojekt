@@ -56,6 +56,9 @@ def main():
     iNum = 4
     iTog = np.full((iNum,), False)
 
+    # Keeping track of whether or not the update button has been clicked
+    updated = False
+
     # look into enable_events = True
     # Define the GUI layout
     big_font = 'Courier 20 bold'
@@ -286,6 +289,7 @@ def main():
 
         # show initial signal
         if event == '-SHOW1D-':
+            updated = False
             n_std = float(values['-SLIDER-NOISE-'])
             sig = values['-TESTSIG-']
             TP = cuqi.testproblem.Deconvolution1D(phantom=sig, noise_std=n_std)
@@ -381,6 +385,7 @@ def main():
         show_ci = values['PLOT-CONF']
         if event in ('-UPDATE-1D-', None):
 
+            updated = True
             # Get values from input
             par1 = float(values['-SLIDER1-'])
             par2 = values['-BCTYPE-']
@@ -451,7 +456,7 @@ def main():
 
         # Show true signal/confidence interval or not
 
-        if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None)):
+        if ((event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None))) and updated == True:
             if not show_ci and not show_true:  # plot mean
                 try:
                     plt.subplot(212).clear()
