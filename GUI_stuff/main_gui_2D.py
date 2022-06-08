@@ -319,6 +319,8 @@ def main():
             print('')
             window['file_error'].update(visible = False)
             window['-IB_2D-',5].update(visible = False)
+            iTog2D[5] = False
+            window['-ITX_2D-',5].update(visible = bool(iTog2D[5]))
         if values['-TESTSIG_2D-'] == '' and values['-FILE-'] == '':
             window['-TESTSIG_2D-'].update(value = 'satellite')
             window['file_error'].update(visible = False)
@@ -404,6 +406,11 @@ def main():
             if os.path.exists(filename) and os.path.splitext(filename)[1] in file_types2:
                 image = Image.open(values["-FILE-"]).convert('RGB')
                 window['-ITX_2D-',5].update(value = f"Original Image Dimensions: %s" % (image.size,))
+            else:
+                window['-IB_2D-',5].update(visible = False)
+                iTog2D[5] = False
+                window['-ITX_2D-',5].update(visible = bool(iTog2D[5]))
+
 
 
         if event == '-FILE-':
@@ -418,6 +425,7 @@ def main():
                 window['file_error'].update(visible = True)
 
         if event == 'show2D':
+            updated = False
             axs[0,0].clear()
             axs[0,1].clear()
             axs[1,0].clear()
@@ -427,9 +435,13 @@ def main():
             axs[1,0].axis('off')
             axs[1,1].axis('off')
             fig2.clear()
+            fig_agg2.draw()
             fig3.clear()
+            fig_agg3.draw()
             fig4.clear()
+            fig_agg4.draw()
             fig5.clear()
+            fig_agg5.draw()
             
             if values['-FILE-'] == '':
                 sig = values['-TESTSIG_2D-']
@@ -496,6 +508,7 @@ def main():
     # Clicked update button
         #if event in ('Update', None):
         if event in ('up2d', None):
+            updated = True
             #window['-FIGUP-'].update(visible = True)
             #window['-FIGUP-'].update('Loading...')
 
@@ -613,7 +626,7 @@ def main():
             fig_agg5.draw()
 
              
-        if event == 'Uncer' or event == 'up2d':
+        if (event == 'Uncer' or event == 'up2d') and updated:
             if values['Uncer'] == True:
                 try:
                     plt.figure(1)
