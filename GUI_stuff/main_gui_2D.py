@@ -57,7 +57,7 @@ def main():
 
     # initialising toggles for info buttons:
     # number of info buttons
-    iNum2D = 4
+    iNum2D = 5
     iTog2D = np.full((iNum2D,) , False )
 
     options_column = [
@@ -66,7 +66,9 @@ def main():
         [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','Binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("Or choose a file ", key = 'CF', visible = True), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
+        [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
         [sg.Text('Image size:', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1))],
@@ -99,7 +101,7 @@ def main():
         [sg.Checkbox('Add uncertainty overlay', default=False, key='Uncer', enable_events = True, font = small_font),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
         [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
-        [sg.Button('Update', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
+        [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = True, visible = False, key='-OUTPUT_2D-')]
