@@ -14,6 +14,7 @@ from PIL import Image
 import os
 import sys
 import inspect
+import webbrowser
 
 # Add PySimpeGUI
 import PySimpleGUI as sg
@@ -52,6 +53,7 @@ def place(elem):
 def main():
     iNum = 4
     iTog = np.full((iNum,), False)
+    updated_1D = False
     iNum2D = 7
     iTog2D = np.full((iNum2D,) , False )
     test = True
@@ -62,12 +64,13 @@ def main():
     # Define the GUI layout
     big_font = 'Courier 20 bold'
     medium_font = 'Courier 16'
+    medium2_font = 'Courier 14'
     small_font = 'Helvetica 12'
     options_column = [
         [sg.Text('Test signal', font=medium_font)],
         [sg.Text('From library', font = small_font), sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
                    'derivGauss'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
-        [sg.Text('Noise std:', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
+        [sg.Text('Noise std', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
          sg.Input('0.05', key='-INPUT-NOISE-', visible=True,
                   enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 0))],
@@ -92,7 +95,7 @@ def main():
                   enable_events=True, size=(5, 1))],
         #[place(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
         [place(sg.Text('', font=small_font, key='-PAR2-', visible=True)),
-         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', visible=False, size=(10, 1)))],
+         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
@@ -137,12 +140,12 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
         [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
-        [sg.Text('Image size:', font = small_font), 
+        [sg.Text('Image size', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), visible = False, key = ('-IB_2D-',5))],
         [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
-        [sg.Text('Noise std:',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
+        [sg.Text('Noise std',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
@@ -156,7 +159,7 @@ def main():
         [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
         [sg.pin(sg.Text('The precision matrix is the inverse of the covariance matrix. \nThe three types are given as the order of a toeplitz matrix \nwhich is then scaled by alpha squared.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
-        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
+        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
         [place(sg.Text('Std', font = small_font, key = '-PAR1_2D-', visible = True)), 
@@ -216,13 +219,12 @@ def main():
         sg.Column(plot_column2D),]
     ]
     layCol_wel = [
-        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 2), justification='center', font=big_font)],
-        [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
-        [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
-        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. Then noise will be added to simulate the measurement of real life data', font=small_font)],
-        [sg.Text('From this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
-        [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
-        [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
+        [sg.Text('\nWelcome to our CUQI Interactive Demo. By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems.', font =medium2_font)],
+        [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start by using the 1D section first.',font =medium2_font)],
+        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. For 2D you can also choose your own picture!', font=medium2_font)],
+        [sg.Text('Noise will then be added to simulate the measurement of real life data, and from this we will create our bayesian posterior which will be our recreation of the signal', font=medium2_font)],
+        [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=medium2_font)],
+        [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!\n', font = medium2_font)],
         [sg.Image("Cookie-PNG.png",size=(300,300))],
         [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:',font=small_font),
         sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)],
@@ -325,7 +327,8 @@ def main():
         
         if active_tab == 'Tab0':
             if event in ('CUQI at DTU', None):
-                os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
+                webbrowser.open("https://www.compute.dtu.dk/english/cuqi", new=0, autoraise=True)
+                #os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
         # 1D
         if active_tab == 'Tab1':
 
@@ -452,6 +455,7 @@ def main():
 
             # show initial signal
             if event == '-SHOW1D-':
+                updated_1D = False
                 n_std_1D = float(values['-SLIDER-NOISE-'])
                 sig_1D = values['-TESTSIG-']
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig_1D, noise_std=n_std_1D)
@@ -547,7 +551,7 @@ def main():
             show_true = values['TRUE_SIGNAL']
             show_ci = values['PLOT-CONF']
             if event in ('-UPDATE-1D-', None):
-
+                updated_1D = True
                 # Get values from input
                 par1_1D = float(values['-SLIDER1-'])
                 par2_1D = values['-BCTYPE-']
@@ -619,7 +623,7 @@ def main():
 
             # Show true signal/confidence interval or not
 
-            if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None)):
+            if ((event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None))) and updated_1D == True:
                 if not show_ci and not show_true:  # plot mean
                     try:
                         plt.figure(6)
