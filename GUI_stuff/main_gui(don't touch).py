@@ -53,6 +53,7 @@ def place(elem):
 def main():
     iNum = 4
     iTog = np.full((iNum,), False)
+    updated_1D = False
     iNum2D = 7
     iTog2D = np.full((iNum2D,) , False )
     test = True
@@ -450,6 +451,7 @@ def main():
 
             # show initial signal
             if event == '-SHOW1D-':
+                updated_1D = False
                 n_std_1D = float(values['-SLIDER-NOISE-'])
                 sig_1D = values['-TESTSIG-']
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig_1D, noise_std=n_std_1D)
@@ -545,7 +547,7 @@ def main():
             show_true = values['TRUE_SIGNAL']
             show_ci = values['PLOT-CONF']
             if event in ('-UPDATE-1D-', None):
-
+                updated_1D = True
                 # Get values from input
                 par1_1D = float(values['-SLIDER1-'])
                 par2_1D = values['-BCTYPE-']
@@ -617,7 +619,7 @@ def main():
 
             # Show true signal/confidence interval or not
 
-            if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None)):
+            if ((event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None))) and updated_1D == True:
                 if not show_ci and not show_true:  # plot mean
                     try:
                         plt.figure(6)
