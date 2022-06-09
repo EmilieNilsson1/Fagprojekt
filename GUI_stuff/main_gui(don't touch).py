@@ -67,7 +67,7 @@ def main():
         [sg.Text('Test signal', font=medium_font)],
         [sg.Text('From library', font = small_font), sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
                    'derivGauss'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
-        [sg.Text('Noise std:', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
+        [sg.Text('Noise std', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
          sg.Input('0.05', key='-INPUT-NOISE-', visible=True,
                   enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 0))],
@@ -137,12 +137,12 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
         [sg.pin(sg.Text('Files must be PNG or JPEG.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[4]), key= ('-ITX_2D-',4)))],
-        [sg.Text('Image size:', font = small_font), 
+        [sg.Text('Image size', font = small_font), 
         sg.Slider(range=(8, 1024), default_value=128, resolution=8, size=(20, 10), orientation='h', key='-SLIDER-SIZE_2D-', enable_events = True, disable_number_display=True),
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), visible = False, key = ('-IB_2D-',5))],
         [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
-        [sg.Text('Noise std:',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
+        [sg.Text('Noise std',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
@@ -216,7 +216,6 @@ def main():
         sg.Column(plot_column2D),]
     ]
     layCol_wel = [
-        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 2), justification='center', font=big_font)],
         [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
         [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
         [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. Then noise will be added to simulate the measurement of real life data', font=small_font)],
