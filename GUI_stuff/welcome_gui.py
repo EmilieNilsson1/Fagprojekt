@@ -55,7 +55,7 @@ def main():
     small_font = 'Helvetica 12'
 
     # create simple layout
-    layout = [
+    layCol = [
         [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 3), justification='center', font=big_font)],
         [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
         [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
@@ -67,6 +67,12 @@ def main():
         sg.Button('CUQI', enable_events = True, size=(10, 1), font=medium_font)],
         [sg.Image("gauss.png",size=(300,300))],
         [sg.Button('Exit', size=(10, 1), font=medium_font)]
+    ]
+
+    layout = [
+        [sg.VPush()],
+        [sg.Push(),sg.Column(layCol,element_justification='c'),sg.Push()],
+        [sg.VPush()]
     ]
 
     # Create the GUI window
