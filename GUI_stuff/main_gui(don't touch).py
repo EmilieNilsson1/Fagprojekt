@@ -115,7 +115,7 @@ def main():
          sg.Text('Figure updated', visible=False, key='-FIGUP-', text_color='white', font=medium_font, enable_events=True)],
          [sg.Text('Sampling in progress...', visible=False, key='-LOADTXT-',pad=(3, 10))],
         [sg.Multiline(size=(20, 1.5), no_scrollbar=True, auto_refresh=True,
-                      autoscroll=True, reroute_stdout=False, visible=False, key='-OUTPUT-', enable_events=True)]
+                      autoscroll=True, reroute_stdout=False, visible=False, key='-OUTPUT-', enable_events=True, do_not_clear = False)]
     ]
 
     plot_column = [
@@ -173,7 +173,7 @@ def main():
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font, key = '-EXIT_2D-'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
-        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = False, visible = False, key='-OUTPUT_2D-', enable_events= True)]
+        [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = False, visible = False, key='-OUTPUT_2D-', enable_events= True, do_not_clear = False)]
     ]
 
     # 2D plot tabs
@@ -307,8 +307,9 @@ def main():
             if event in ('Exit', None):
                 exit()
             
-            #window['-OUTPUT-'].update(reroute_stdout = True)
-            #window['-OUTPUT_2D-'].update(reroute_stdout = False)
+            
+            window['-OUTPUT_2D-'].restore_stdout()
+            window['-OUTPUT-'].reroute_stdout_to_here()
 
             orig_col = window['-INPUT-NOISE-'].BackgroundColor
 
@@ -650,8 +651,9 @@ def main():
             if event == '-EXIT_2D-':
                 exit()
             
-            #window['-OUTPUT-'].update(reroute_stdout = False)
-            #window['-OUTPUT_2D-'].update(reroute_stdout = True)
+            window['-OUTPUT-'].restore_stdout()
+            window['-OUTPUT_2D-'].reroute_stdout_to_here()
+           
             orig_col = window['-RIGHT_SIZE_2D-'].BackgroundColor
 
             if event:
