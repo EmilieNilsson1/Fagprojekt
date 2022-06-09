@@ -56,23 +56,30 @@ def main():
 
     # create simple layout
     layCol = [
-        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 3), justification='center', font=big_font)],
+        [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 2), justification='center', font=big_font)],
         [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
         [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
-        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted and added noise to simulate the measurement of real life data', font=small_font)],
+        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. Then noise will be added to simulate the measurement of real life data', font=small_font)],
         [sg.Text('From this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
         [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
         [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
+        [sg.Image("Cookie-PNG.png",size=(300,300))],
         [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
-        sg.Button('CUQI', enable_events = True, size=(10, 1), font=medium_font)],
-        [sg.Image("gauss.png",size=(300,300))],
-        [sg.Button('Exit', size=(10, 1), font=medium_font)]
+        sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)]
+        #[sg.Button('Exit', size=(100, 1), font=medium_font)]
     ]
 
+    # layCol = [
+    #     [sg.Text('Welcome to our CUQIpy Interactive Demo!', size=(40, 2), justification='center', font=big_font)],
+    #     [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems \n\nThe demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first \nThe idea is simple: You simply choose one of the given test signal which will be convoluted and added noise to simulate the measurement of real life data \nFrom this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal \nTo get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation \nAfter pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font =small_font)],
+    #     [sg.Image("gauss.png",size=(300,300))],
+    #     [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
+    #     sg.Button('CUQI', enable_events = True, size=(10, 1), font=medium_font)],
+    #     [sg.Button('Exit', size=(10, 1), font=medium_font)]
+    # ]
+
     layout = [
-        [sg.VPush()],
-        [sg.Push(),sg.Column(layCol,element_justification='c'),sg.Push()],
-        [sg.VPush()]
+        [sg.Push(),sg.Column(layCol,element_justification='c'),sg.Push()]
     ]
 
     # Create the GUI window
@@ -88,7 +95,7 @@ def main():
         if event in ('Exit', None):
             exit()
         
-        if event in ('CUQI', None):
+        if event in ('CUQI at DTU', None):
             os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
         
 if __name__ == '__main__':
