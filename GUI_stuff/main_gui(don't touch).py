@@ -65,7 +65,7 @@ def main():
     small_font = 'Helvetica 12'
     options_column = [
         [sg.Text('Test signal', font=medium_font)],
-        [sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
+        [sg.Text('From library', font = small_font), sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
                    'derivGauss'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
         [sg.Text('Noise std:', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
          sg.Input('0.05', key='-INPUT-NOISE-', visible=True,
@@ -85,13 +85,14 @@ def main():
              'black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
          sg.Button('Uniform', image_data=resize_base64_image("uniform.png", (150, 300)), key='-UNI-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font)],
         [sg.Text('Prior parameters', font=medium_font, key='PRIOR_TEXT')],
-        [sg.pin(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
-         sg.pin(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, orientation='h',
+        [place(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
+         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, orientation='h',
                           enable_events=True, disable_number_display=True, key='-SLIDER1-', visible=False, size=(20, 10))),
          sg.Input('0.1', key='-INPUT-PAR1-', visible=True,
                   enable_events=True, size=(5, 1))],
-        [sg.pin(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
-         sg.pin(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', visible=False, size=(10, 1)))],
+        #[place(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
+        [place(sg.Text('', font=small_font, key='-PAR2-', visible=True)),
+         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', visible=False, size=(10, 1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
@@ -129,9 +130,9 @@ def main():
          sg.Column(plot_column), ]
     ]
     options_column2D = [
-        [sg.Text('Choose test signal', font =medium_font)],
-        [sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
-        sg.Text("Or choose a file ", key = 'CF', visible = True, font=small_font), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
+        [sg.Text('Test signal', font =medium_font)],
+        [sg.Text('From library', font = small_font),sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        sg.Text("or own file ", key = 'CF', visible = True, font=small_font), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
         sg.Text('error in image path', visible = False, enable_events = True, key = 'file_error', text_color = 'white', background_color = 'red', font = small_font)], #key = 'Browse'
@@ -147,17 +148,16 @@ def main():
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
         [sg.Button('Show initial signal', key = 'show2D')],
         [sg.Text('_'*120)],
-        [sg.Text('Choose prior distribution', font =medium_font)], 
+        [sg.Text('Prior distribution', font =medium_font), sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem \nNotice that laplace and cauchy is used on the difference between consecutive elements', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font),
-        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
-        [sg.pin(sg.Text('something about the priors - diff things', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
-        [sg.Text('Set parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
+        [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
-        [place(sg.Text('Prior std', font = small_font, key = '-PAR1_2D-', visible = True)), 
+        [place(sg.Text('Std', font = small_font, key = '-PAR1_2D-', visible = True)), 
         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = True, size = (20,10))), 
         place(sg.InputText('0.1', key='-RIGHT1_2D-', visible = True, enable_events = True, size = (5,1)))],
         [sg.Text('_'*120)],
@@ -808,7 +808,7 @@ def main():
                 window['-PAR1_2D-'].update(visible = True)
                 window['-SLIDER1_2D-'].update(visible=True)
                 window['-RIGHT1_2D-'].update(visible=True)
-                window['-PAR1_2D-'].update('Prior std')
+                window['-PAR1_2D-'].update('Std')
             elif event == '-LAPLACE_2D-':
                 test[1] = True
                 window['ORDER_TEXT'].update('Boundary')
