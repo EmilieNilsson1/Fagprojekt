@@ -52,7 +52,7 @@ def place(elem):
 def main():
     iNum = 4
     iTog = np.full((iNum,), False)
-    iNum2D = 6
+    iNum2D = 7
     iTog2D = np.full((iNum2D,) , False )
     test = True
     file_types = [("JPEG (*.jpg)", "*.jpg"),("PNG (*.png)", "*.png"),
@@ -153,7 +153,9 @@ def main():
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
-        [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
+        [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
+        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
+        [sg.pin(sg.Text('The precision matrix is the inverse of the covariance matrix. \nThe three types are given as the order of a toeplitz matrix \nwhich is then scaled by alpha squared.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
@@ -215,7 +217,7 @@ def main():
     ]
 
     layout = [
-        [sg.Text('CUQIpy Interactive Demo', size=(30, 2),justification='center', font=big_font)],
+        [sg.Push(),sg.Text('CUQIpy Interactive Demo', size=(30, 1),justification='center', font=big_font),sg.Push()],
         [sg.TabGroup([[sg.Tab('1D convolution', tab1_layout, key='Tab1', title_color = 'black'),
                          sg.Tab('2D convolution', tab2_layout, key = 'Tab2')]],
                        key='-TABS-', title_color='black',
@@ -809,6 +811,7 @@ def main():
                 window['-SLIDER1_2D-'].update(visible=True)
                 window['-RIGHT1_2D-'].update(visible=True)
                 window['-PAR1_2D-'].update('Std')
+                window[('-IB_2D-',6)].update(visible=True)
             elif event == '-LAPLACE_2D-':
                 test[1] = True
                 window['ORDER_TEXT'].update('Boundary')
@@ -826,7 +829,9 @@ def main():
                 window['-PAR1_2D-'].update(visible = False)
                 window['-SLIDER1_2D-'].update(visible=False)
                 window['-RIGHT1_2D-'].update(visible=False)
-
+                window[('-IB_2D-',6)].update(visible=False)
+                iTog2D[6] = False
+                window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
             elif event == '-CAUCHY_2D-':
                 Dist2D = "Cauchy_diff"
                 test[1] = True
@@ -844,8 +849,9 @@ def main():
                 window['-SLIDER1_2D-'].update(visible=False)
                 window['-RIGHT1_2D-'].update(visible=False)
                 window['-PAR1_2D-'].update(visible = False)
-
-            
+                window[('-IB_2D-',6)].update(visible=False)
+                iTog2D[6] = False
+                window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
             if sum(test) != 5:
                 window['up2d'].update(disabled=True)
                 window['up2d'].update(button_color='gray')
