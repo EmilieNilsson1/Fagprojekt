@@ -224,10 +224,14 @@ def main():
         [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
         [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
         [sg.Image("Cookie-PNG.png",size=(300,300))],
-        [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
-        sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)]
-        #[sg.Button('Exit', size=(100, 1), font=medium_font)]
+        [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:',font=small_font),
+        sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)],
+        [sg.Text('',font=big_font)],
+        [sg.Text('made by Oliver Birkmose Broager, Magnus Holm, Christian Deding Nielsen and Emilie Nilsson',font=small_font)],
+        [sg.Text('DTU',font=medium_font)],
+        [sg.Text('February-June 2022',font=small_font)]
     ]
+    
     layout_wel = [
         [sg.Push(),sg.Column(layCol_wel,element_justification='c'),sg.Push()]
     ]
