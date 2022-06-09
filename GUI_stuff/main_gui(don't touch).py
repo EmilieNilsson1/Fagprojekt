@@ -14,6 +14,7 @@ from PIL import Image
 import os
 import sys
 import inspect
+import webbrowser
 
 # Add PySimpeGUI
 import PySimpleGUI as sg
@@ -62,6 +63,7 @@ def main():
     # Define the GUI layout
     big_font = 'Courier 20 bold'
     medium_font = 'Courier 16'
+    medium2_font = 'Courier 14'
     small_font = 'Helvetica 12'
     options_column = [
         [sg.Text('Test signal', font=medium_font)],
@@ -216,15 +218,15 @@ def main():
         sg.Column(plot_column2D),]
     ]
     layCol_wel = [
-        [sg.Text('By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =small_font)],
-        [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =small_font)],
-        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. Then noise will be added to simulate the measurement of real life data', font=small_font)],
-        [sg.Text('From this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=small_font)],
-        [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=small_font)],
-        [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!', font = small_font)],
+        [sg.Text('\nWelcome to our CUQI interactive demo. By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems', font =medium2_font)],
+        [sg.Text('The demo is split up in two sections; one for 1D and 2D deconvolution problems respectively. We recommend you start of by using the 1D section first',font =medium2_font)],
+        [sg.Text('The idea is simple: You simply choose one of the given test signal which will be convoluted. Then noise will be added to simulate the measurement of real life data', font=medium2_font)],
+        [sg.Text('From this convoluted signal we will then create our bayesian posterior which will be our recreation of the signal', font=medium2_font)],
+        [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=medium2_font)],
+        [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!\n', font = medium2_font)],
         [sg.Image("Cookie-PNG.png",size=(300,300))],
-        [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:'),
-        sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)]
+        [sg.Text('\nFor more information about the current work in CUQI done at DTU Compute, visit the following site:\n', font=small_font)],
+        [sg.Button('CUQI at DTU', enable_events = True, size=(20, 2), font=medium_font)]
         #[sg.Button('Exit', size=(100, 1), font=medium_font)]
     ]
     layout_wel = [
@@ -320,7 +322,8 @@ def main():
         
         if active_tab == 'Tab0':
             if event in ('CUQI at DTU', None):
-                os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
+                webbrowser.open("https://www.compute.dtu.dk/english/cuqi", new=0, autoraise=True)
+                #os.system("start \"\" https://www.compute.dtu.dk/english/cuqi")
         # 1D
         if active_tab == 'Tab1':
 
