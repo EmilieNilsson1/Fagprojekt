@@ -78,7 +78,7 @@ def main():
         [sg.Button('Show initial signal', key = '-SHOW1D-')],
         [sg.Text('_'*120)],
         [sg.Text('Prior distribution', font=medium_font),sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 3))], 
-        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem \nNotice that laplace and cauchy is used on the difference between consecutive elements \nChoosing laplace, cauchy or uniform requires significantly more computation time than gaussian',
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nNotice that laplace and cauchy is used on the difference between consecutive elements. \nChoosing laplace, cauchy or uniform requires significantly more computation time than gaussian.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 3)))],
         [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (150, 300)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
          sg.Button('Laplace', image_data=resize_base64_image("laplace.png", (150, 300)), key='-LAPLACE-', button_color=(
@@ -112,7 +112,7 @@ def main():
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ',
                         text_color='black', background_color='light yellow', visible=bool(iTog[2]), key=('-ITX-', 2)))],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox(
-            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10), font=small_font)],
+            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox('Show RSS', default=True, key='RSS', enable_events=True, pad=(3, 10), font=small_font)],
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key='-UPDATE-1D-'),
          sg.Button('Exit', size=(10, 1), font=medium_font),
          sg.Text('Figure updated', visible=False, key='-FIGUP-', text_color='white', font=medium_font, enable_events=True)],
@@ -122,7 +122,8 @@ def main():
     ]
 
     plot_column = [
-        [sg.Canvas(size=(1100, 620), key='-CANVAS-')]
+        [sg.Canvas(size=(1100, 620), key='-CANVAS-')],
+        [sg.Text('', key = 'error1D')]
     ]
 
     # 1D layout:
@@ -151,7 +152,7 @@ def main():
         [sg.Button('Show initial signal', key = 'show2D')],
         [sg.Text('_'*120)],
         [sg.Text('Prior distribution', font =medium_font), sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
-        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem \nNotice that laplace and cauchy is used on the difference between consecutive elements', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nNotice that laplace and cauchy is used on the difference between consecutive elements', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
@@ -544,6 +545,7 @@ def main():
             # Clicked update button
             show_true = values['TRUE_SIGNAL']
             show_ci = values['PLOT-CONF']
+            show_RSS = values['RSS']
             if event in ('-UPDATE-1D-', None):
 
                 # Get values from input
@@ -587,6 +589,11 @@ def main():
                     window['-FIGUP-'].update(text_color='white')
                     window['-FIGUP-'].update(visible=True)
 
+                    samp = xs_1D.samples
+                    meansamp = np.mean(samp, axis=-1)
+                    error = sum((meansamp - TP_1D.exactSolution)**2)
+                    etext = "{:.2e}".format(error)
+
                     # Update plot
                     grid = np.linspace(0, 128, 128)
                     fig.clear()
@@ -594,7 +601,13 @@ def main():
                     plt.subplot(211)
                     plt.plot(grid, TP_1D.data/max(TP_1D.data),color='green')  # Noisy data
                     plt.legend(['Initial signal'], loc=1)
-                    plt.subplot(212)
+                    
+                    if show_RSS == True:
+                        plt.subplot(212)
+                        plt.annotate("RSS: " +etext, xy=(0.05, 0.9), xycoords='axes fraction',bbox=dict(boxstyle="square", fc="w"))
+                    else:
+                        plt.subplot(212)
+                  
                     if show_ci and not show_true:
                         xs_1D.plot_ci(conf)
                     elif show_ci and show_true:
@@ -617,11 +630,15 @@ def main():
 
             # Show true signal/confidence interval or not
 
-            if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None)):
+            if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None) or (event == 'RSS')):
                 if not show_ci and not show_true:  # plot mean
                     try:
                         plt.figure(6)
-                        plt.subplot(212).clear()
+                        if show_RSS == True:
+                            plt.subplot(212).clear()
+                            plt.annotate("RSS: " +etext, xy=(0.05, 0.9), xycoords='axes fraction',bbox=dict(boxstyle="square", fc="w"))
+                        else:
+                            plt.subplot(212).clear()
                         samp = xs_1D.samples
                         meansamp = np.mean(samp, axis=-1)
                         plt.plot(grid, meansamp, label='Mean')
@@ -636,7 +653,11 @@ def main():
                     try:
                         samp = xs_1D.samples
                         plt.figure(6)
-                        plt.subplot(212).clear()
+                        if show_RSS == True:
+                            plt.subplot(212).clear()
+                            plt.annotate("RSS: " +etext, xy=(0.05, 0.9), xycoords='axes fraction',bbox=dict(boxstyle="square", fc="w"))
+                        else:
+                            plt.subplot(212).clear()
                         xs_1D.plot_ci(conf)
                         #plt.ylim(-0.25, 1.25)
                         plt.xlim(0, 128)
@@ -646,7 +667,11 @@ def main():
                 if show_true and show_ci:
                     try:
                         plt.figure(6)
-                        plt.subplot(212).clear()
+                        if show_RSS == True:
+                            plt.subplot(212).clear()
+                            plt.annotate("RSS: " +etext, xy=(0.05, 0.9), xycoords='axes fraction',bbox=dict(boxstyle="square", fc="w"))
+                        else:
+                            plt.subplot(212).clear()
                         xs_1D.plot_ci(conf, exact=TP_1D.exactSolution)
                         #plt.ylim(-0.25, 1.25)
                         plt.xlim(0, 128)
@@ -656,7 +681,11 @@ def main():
                 if show_true and not show_ci:
                     try:
                         plt.figure(6)
-                        plt.subplot(212).clear()
+                        if show_RSS == True:
+                            plt.subplot(212).clear()
+                            plt.annotate("RSS: " +etext, xy=(0.05, 0.9), xycoords='axes fraction',bbox=dict(boxstyle="square", fc="w"))
+                        else:
+                            plt.subplot(212).clear()
                         samp = xs_1D.samples
                         meansamp = np.mean(samp, axis=-1)
                         plt.plot(grid, meansamp, label='Mean')
@@ -1051,6 +1080,8 @@ def main():
                     window['-OUTPUT_2D-'].update(visible=False)
 
                 #fig1.clear()
+                error_2D = sum((xs.mean() - TP_2D.exactSolution)**2)
+                etext_2D  = "{:.2e}".format(error_2D)
                 std = np.reshape(np.std(xs.samples,axis=-1),(-1,sz))
                 RED = np.zeros((sz,sz))
                 std_stand = std/np.max(std)
@@ -1093,7 +1124,9 @@ def main():
 
                 fig4.clear()
                 plt.figure(4)
-                xs.plot_mean()
+                #xs.plot_mean()
+                plt.imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
+                plt.title("Sample mean \nRSS: " + etext_2D)
                 plt.axis("off")
                 fig_agg4.draw()
 
@@ -1117,7 +1150,8 @@ def main():
                         fig_agg1.draw()
 
                         plt.figure(4)
-                        plt.axis("off")
+                        #plt.axis("off")
+
                         plt.imshow(RED,cmap='autumn', alpha = std_stand)
                         cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
                         cBarRed.ax.set_xlabel('std')
@@ -1134,8 +1168,11 @@ def main():
 
                         fig4.clear()
                         plt.figure(4)
-                        xs.plot_mean()
+                        #xs.plot_mean()
                         plt.axis("off")
+                        plt.title("Sample mean \n RSS: " + etext_2D)
+                        plt.imshow(np.reshape(xs.mean(), (-1, sz)), cmap = 'gray')
+                        #plt.xlabel(etext_2D)
                         fig_agg4.draw()
                     except: pass
 
