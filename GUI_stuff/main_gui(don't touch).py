@@ -53,6 +53,7 @@ def place(elem):
 def main():
     iNum = 4
     iTog = np.full((iNum,), False)
+    updated_1D = False
     iNum2D = 7
     iTog2D = np.full((iNum2D,) , False )
     test = True
@@ -94,7 +95,7 @@ def main():
                   enable_events=True, size=(5, 1))],
         #[place(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
         [place(sg.Text('', font=small_font, key='-PAR2-', visible=True)),
-         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', visible=False, size=(10, 1)))],
+         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
@@ -159,7 +160,7 @@ def main():
         [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
         [sg.pin(sg.Text('The precision matrix is the inverse of the covariance matrix. \nThe three types are given as the order of a toeplitz matrix \nwhich is then scaled by alpha squared.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
-        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, key = 'ORDER', size = (5,1)))], 
+        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
         [place(sg.Text('Std', font = small_font, key = '-PAR1_2D-', visible = True)), 
@@ -226,10 +227,14 @@ def main():
         [sg.Text('To get the most out of the demo try choosing different prior distributions with various parameters to see how they affect the uncertainty in our recreation', font=medium2_font)],
         [sg.Text('After pressing "Update" various plots will be shown from which you can learn various informations about the signal and the bayesian recreation. Have fun!\n', font = medium2_font)],
         [sg.Image("Cookie-PNG.png",size=(300,300))],
-        [sg.Text('\nFor more information about the current work in CUQI done at DTU Compute, visit the following site:\n', font=small_font)],
-        [sg.Button('CUQI at DTU', enable_events = True, size=(20, 2), font=medium_font)]
-        #[sg.Button('Exit', size=(100, 1), font=medium_font)]
+        [sg.Text('For more information about the current work in CUQI done at DTU Compute, visit the following site:',font=small_font),
+        sg.Button('CUQI at DTU', enable_events = True, size=(10, 2), font=medium_font)],
+        [sg.Text('',font=big_font)],
+        [sg.Text('made by Oliver Birkmose Broager, Magnus Holm, Christian Deding Nielsen and Emilie Nilsson',font=small_font)],
+        [sg.Text('DTU',font=medium_font)],
+        [sg.Text('February-June 2022',font=small_font)]
     ]
+    
     layout_wel = [
         [sg.Push(),sg.Column(layCol_wel,element_justification='c'),sg.Push()]
     ]
@@ -451,6 +456,7 @@ def main():
 
             # show initial signal
             if event == '-SHOW1D-':
+                updated_1D = False
                 n_std_1D = float(values['-SLIDER-NOISE-'])
                 sig_1D = values['-TESTSIG-']
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig_1D, noise_std=n_std_1D)
@@ -547,7 +553,7 @@ def main():
             show_ci = values['PLOT-CONF']
             show_RSS = values['RSS']
             if event in ('-UPDATE-1D-', None):
-
+                updated_1D = True
                 # Get values from input
                 par1_1D = float(values['-SLIDER1-'])
                 par2_1D = values['-BCTYPE-']
@@ -630,7 +636,7 @@ def main():
 
             # Show true signal/confidence interval or not
 
-            if (event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == ('-UPDATE-1D-', None) or (event == 'RSS')):
+            if ((event == 'TRUE_SIGNAL') or (event == 'PLOT-CONF') or (event == 'RSS') or (event == ('-UPDATE-1D-', None))) and updated_1D == True:
                 if not show_ci and not show_true:  # plot mean
                     try:
                         plt.figure(6)
