@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 #%%
 # making pdfs
-x_i_diff = np.linspace(-4,4,1000)
+x_i_diff = np.linspace(-1,2,1000)
 
 prob_l = sps.laplace.pdf(x_i_diff)
 
@@ -13,24 +13,30 @@ prob_c = sps.cauchy.pdf(x_i_diff)
 
 prob_g = sps.norm.pdf(x_i_diff)
 
+prob_u = sps.uniform.pdf(x_i_diff, loc=-1, scale=2)
+
 prob_u = sps.uniform.pdf(x_i_diff)
 
-plt.plot(x_i_diff,prob_g, label = "Gauss")
+# plt.plot(x_i_diff,prob_g, label = "Gauss")
 #plt.xlabel("$x$")
 #plt.ylabel("Gauss pdf")
 #plt.savefig("Gauss1D", dpi = 350)
 
-plt.plot(x_i_diff, prob_l, label = "Laplace")
+# plt.plot(x_i_diff, prob_l, label = "Laplace")
 # #plt.xlabel("$x_{i}-x_{i+1}$")
 # #plt.ylabel("Laplace pdf")
 #plt.legend(loc =2, fontsize = 10)
 #plt.savefig("Laplace1D", dpi = 350)
 
-plt.plot(x_i_diff, prob_c, label = "Cauchy")
+# plt.plot(x_i_diff, prob_c, label = "Cauchy")
 # plt.xlabel("$x_{i}-x_{i+1}$")
 # #plt.ylabel("Cauchy pdf")
 #plt.legend(loc =2, fontsize = 10)
 #plt.savefig("Cauchy1D", dpi = 350)
+
+plt.plot(x_i_diff, prob_u)
+plt.savefig("Unif1D", dpi = 350)
+
 
 #%%
 # generating random walks with laplace and cauchy
