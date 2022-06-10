@@ -135,7 +135,7 @@ def main():
     ]
     options_column2D = [
         [sg.Text('Test signal', font =medium_font)],
-        [sg.Text('From library', font = small_font),sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        [sg.Text('From library', font = small_font),sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary', 'fourphases', 'threephasessmooth', 'shepp_logan'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("or own file ", key = 'CF', visible = True, font=small_font), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
