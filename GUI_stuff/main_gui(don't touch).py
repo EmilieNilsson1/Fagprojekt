@@ -163,9 +163,6 @@ def main():
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))], 
         [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
-        [place(sg.Text('Std', font = small_font, key = '-PAR1_2D-', visible = True)), 
-        place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = True, size = (20,10))), 
-        place(sg.InputText('0.1', key='-RIGHT1_2D-', visible = True, enable_events = True, size = (5,1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
@@ -740,29 +737,6 @@ def main():
                     test[0] = True
                     window.Element('-RIGHTA_2D-').update(background_color = orig_col)
                 
-            
-                if event in '-RIGHT1_2D-':
-                    try:
-                        if float(values['-RIGHT1_2D-']) >= window.Element('-SLIDER1_2D-').Range[0] and float(values['-RIGHT1_2D-'])<= window.Element('-SLIDER1_2D-').Range[1]:
-                            window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
-                            window.Element('-RIGHT1_2D-').update(background_color = orig_col)
-                            test[1] = True
-                        else:
-                            window.Element('-SLIDER1_2D-').update(value = 0.05)
-                            window.Element('-RIGHT1_2D-').update(background_color = 'red')
-                            test[1] = False
-                    except: 
-                        window.Element('-SLIDER1_2D-').update(value = 0.05)
-                        window.Element('-RIGHT1_2D-').update(background_color = 'red')
-                        test[1] = False
-                if window.Element('-RIGHT1_2D-').visible == False:
-                    test[1] = True
-                    
-                if event in '-SLIDER1_2D-':
-                    window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-'])
-                    test[1] = True
-                    window.Element('-RIGHT1_2D-').update(background_color = orig_col)
-                
                 if event in '-RIGHT2_2D-':
                     try:
                         if int(values['-RIGHT2_2D-']) in range(window['-SLIDER-SAMPLE_2D-'].Range[0],window['-SLIDER-SAMPLE_2D-'].Range[1]):
@@ -845,9 +819,6 @@ def main():
                 window.Element('-RIGHTA_2D-').update(value = 0.05)
                 window.Element('-RIGHTA_2D-').update(background_color = orig_col)
                 test[0] = True
-                window.Element('-SLIDER1_2D-').update(value = 0.05)
-                window.Element('-RIGHT1_2D-').update(value = 0.05)
-                window.Element('-RIGHT1_2D-').update(background_color = orig_col)
                 test[1] = True
             if event == '-GAUSSIAN_2D-':
                 Dist2D = "GaussianCov"
@@ -864,10 +835,6 @@ def main():
                 window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
                 window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-                window['-PAR1_2D-'].update(visible = True)
-                window['-SLIDER1_2D-'].update(visible=True)
-                window['-RIGHT1_2D-'].update(visible=True)
-                window['-PAR1_2D-'].update('Std')
                 window[('-IB_2D-',6)].update(visible=True)
             elif event == '-LAPLACE_2D-':
                 test[1] = True
@@ -883,9 +850,6 @@ def main():
                 window['-LAPLACE_2D-'].update(button_color=(None,'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-                window['-PAR1_2D-'].update(visible = False)
-                window['-SLIDER1_2D-'].update(visible=False)
-                window['-RIGHT1_2D-'].update(visible=False)
                 window[('-IB_2D-',6)].update(visible=False)
                 iTog2D[6] = False
                 window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
@@ -903,9 +867,6 @@ def main():
                 window['-CAUCHY_2D-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
-                window['-SLIDER1_2D-'].update(visible=False)
-                window['-RIGHT1_2D-'].update(visible=False)
-                window['-PAR1_2D-'].update(visible = False)
                 window[('-IB_2D-',6)].update(visible=False)
                 iTog2D[6] = False
                 window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
@@ -1030,7 +991,7 @@ def main():
 
                 # Get values from input
                 sz = int(values['-SLIDER-SIZE_2D-'])
-                par1 = float(values['-SLIDER1_2D-'])
+                par1 = float(values['ALPHA'])
                 par2 = values['ORDER']
                 sampsize = int(values['-SLIDER-SAMPLE_2D-'])
                 n_std = float(values['-SLIDER-NOISE_2D-'])
