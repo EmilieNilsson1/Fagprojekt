@@ -6,8 +6,6 @@ from email.policy import default
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import matplotlib.cm
-import matplotlib.colors as mpc
 import base64
 import io
 from PIL import Image
@@ -15,6 +13,11 @@ import os
 import sys
 import inspect
 import webbrowser
+
+# some functions
+from matplotlib.colors import Normalize
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.cm import ScalarMappable
 
 # Add PySimpeGUI
 import PySimpleGUI as sg
@@ -135,7 +138,7 @@ def main():
     ]
     options_column2D = [
         [sg.Text('Test signal', font =medium_font)],
-        [sg.Text('From library', font = small_font),sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
+        [sg.Text('From library', font = small_font),sg.Combo(['astronaut','cat','camera','satellite', 'grains', 'smooth', 'threephases','binary', 'fourphases', 'threephasessmooth', 'shepp_logan'],key = '-TESTSIG_2D-' , default_value='satellite', enable_events=True, readonly = True),
         sg.Text("or own file ", key = 'CF', visible = True, font=small_font), sg.Input(key='-FILE-', visible = True, size = (20,10), enable_events = True), 
         sg.FileBrowse(file_types=file_types, visible = True, enable_events = True, target = '-FILE-'), 
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',4)),
@@ -161,11 +164,8 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
         [sg.pin(sg.Text('The precision matrix is the inverse of the covariance matrix. \nThe three types are given as the order of a toeplitz matrix \nwhich is then scaled by alpha squared.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
         [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))], 
-        [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
+        [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
-        [place(sg.Text('Std', font = small_font, key = '-PAR1_2D-', visible = True)), 
-        place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution = 0.01, orientation='h', enable_events = True, disable_number_display=True, key='-SLIDER1_2D-', visible = True, size = (20,10))), 
-        place(sg.InputText('0.1', key='-RIGHT1_2D-', visible = True, enable_events = True, size = (5,1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
@@ -292,12 +292,10 @@ def main():
     Dist2D = "GaussianCov"
     updated = False
 
-
     canvas_elem = window['-CANVAS-']
     canvas = canvas_elem.TKCanvas
 
     # Draw the initial figure in the window
-
     fig = plt.figure(6, figsize=(6, 6))
     fig_agg = draw_figure(canvas, fig)
 
@@ -337,7 +335,6 @@ def main():
             if event in ('Exit', None):
                 exit()
             
-            
             window['-OUTPUT_2D-'].restore_stdout()
             window['-OUTPUT-'].reroute_stdout_to_here()
 
@@ -345,7 +342,6 @@ def main():
 
             if event:
                 window['-FIGUP-'].update(visible = False)
-                
 
             if isinstance(event, str):
                 # noise input box
@@ -374,6 +370,7 @@ def main():
                     test_1D[0] = True
                     window.Element(
                         '-INPUT-NOISE-').update(background_color=orig_col)
+
                 # par1 input box
                 if event == '-INPUT-PAR1-':
                     try:
@@ -654,7 +651,7 @@ def main():
                         plt.legend()
                         fig_agg.draw()
                     except:
-                        pass
+                        pass   
                 else:  # plot_ci
                     try:
                         samp = xs_1D.samples
@@ -718,7 +715,6 @@ def main():
             if event:
                 window['-FIGUP_2D-'].update(visible = False)
             
-            
             if isinstance(event, str): 
                 if event in '-RIGHTA_2D-':
                     try:
@@ -739,29 +735,6 @@ def main():
                     window.Element('-RIGHTA_2D-').update(values['ALPHA'])
                     test[0] = True
                     window.Element('-RIGHTA_2D-').update(background_color = orig_col)
-                
-            
-                if event in '-RIGHT1_2D-':
-                    try:
-                        if float(values['-RIGHT1_2D-']) >= window.Element('-SLIDER1_2D-').Range[0] and float(values['-RIGHT1_2D-'])<= window.Element('-SLIDER1_2D-').Range[1]:
-                            window.Element('-SLIDER1_2D-').update(value = values['-RIGHT1_2D-'])
-                            window.Element('-RIGHT1_2D-').update(background_color = orig_col)
-                            test[1] = True
-                        else:
-                            window.Element('-SLIDER1_2D-').update(value = 0.05)
-                            window.Element('-RIGHT1_2D-').update(background_color = 'red')
-                            test[1] = False
-                    except: 
-                        window.Element('-SLIDER1_2D-').update(value = 0.05)
-                        window.Element('-RIGHT1_2D-').update(background_color = 'red')
-                        test[1] = False
-                if window.Element('-RIGHT1_2D-').visible == False:
-                    test[1] = True
-                    
-                if event in '-SLIDER1_2D-':
-                    window.Element('-RIGHT1_2D-').update(values['-SLIDER1_2D-'])
-                    test[1] = True
-                    window.Element('-RIGHT1_2D-').update(background_color = orig_col)
                 
                 if event in '-RIGHT2_2D-':
                     try:
@@ -819,7 +792,6 @@ def main():
                     window.Element('-RIGHT_SIZE_2D-').update(int(values['-SLIDER-SIZE_2D-']))
                     test[4] = True
                     window.Element('-RIGHT_SIZE_2D-').update(background_color = orig_col) 
-            
 
             if event == '-FILE-':
                 window['-TESTSIG_2D-'].update(value = '')
@@ -837,17 +809,11 @@ def main():
                 window['-TESTSIG_2D-'].update(value = 'satellite')
                 window['file_error'].update(visible = False)
             
-        
-
-            
             if event == '-GAUSSIAN_2D-' or event == '-LAPLACE_2D-' or event == '-CAUCHY_2D-':
                 window.Element('ALPHA').update(value = 0.05)
                 window.Element('-RIGHTA_2D-').update(value = 0.05)
                 window.Element('-RIGHTA_2D-').update(background_color = orig_col)
                 test[0] = True
-                window.Element('-SLIDER1_2D-').update(value = 0.05)
-                window.Element('-RIGHT1_2D-').update(value = 0.05)
-                window.Element('-RIGHT1_2D-').update(background_color = orig_col)
                 test[1] = True
             if event == '-GAUSSIAN_2D-':
                 Dist2D = "GaussianCov"
@@ -860,14 +826,10 @@ def main():
                 window['ORDER'].update(visible=True)
                 window['ALPHA'].update(value = 0.05)
                 window['ALPHA'].update(visible=True)
-                window['ALPHA'].update(range = (0,10))
+                window['ALPHA'].update(range = (0.01,10))
                 window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
                 window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-                window['-PAR1_2D-'].update(visible = True)
-                window['-SLIDER1_2D-'].update(visible=True)
-                window['-RIGHT1_2D-'].update(visible=True)
-                window['-PAR1_2D-'].update('Std')
                 window[('-IB_2D-',6)].update(visible=True)
             elif event == '-LAPLACE_2D-':
                 test[1] = True
@@ -877,15 +839,12 @@ def main():
                 window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
                 window['ALPHA_TEXT'].update('Scale')  
                 window['ALPHA'].update(visible = True)
-                window['ALPHA'].update(range = (0,1))
+                window['ALPHA'].update(range = (0.01,1))
                 Dist2D = "Laplace_diff"
                 window['PRIOR_TEXT_2D'].update('Set parameters for laplace distribution')
                 window['-LAPLACE_2D-'].update(button_color=(None,'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-                window['-PAR1_2D-'].update(visible = False)
-                window['-SLIDER1_2D-'].update(visible=False)
-                window['-RIGHT1_2D-'].update(visible=False)
                 window[('-IB_2D-',6)].update(visible=False)
                 iTog2D[6] = False
                 window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
@@ -898,14 +857,11 @@ def main():
                 window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
                 window['ALPHA_TEXT'].update('Scale')  
                 window['ALPHA'].update(visible = True)
-                window['ALPHA'].update(range = (0,1))
+                window['ALPHA'].update(range = (0.01,1))
                 window['PRIOR_TEXT_2D'].update('Set parameters for cauchy distribution')
                 window['-CAUCHY_2D-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
-                window['-SLIDER1_2D-'].update(visible=False)
-                window['-RIGHT1_2D-'].update(visible=False)
-                window['-PAR1_2D-'].update(visible = False)
                 window[('-IB_2D-',6)].update(visible=False)
                 iTog2D[6] = False
                 window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
@@ -926,8 +882,6 @@ def main():
                     window['-IB_2D-',5].update(visible = False)
                     iTog2D[5] = False
                     window['-ITX_2D-',5].update(visible = bool(iTog2D[5]))
-
-
 
             if event == '-FILE-':
                 filename = values["-FILE-"]
@@ -1030,7 +984,7 @@ def main():
 
                 # Get values from input
                 sz = int(values['-SLIDER-SIZE_2D-'])
-                par1 = float(values['-SLIDER1_2D-'])
+                par1 = float(values['ALPHA'])
                 par2 = values['ORDER']
                 sampsize = int(values['-SLIDER-SAMPLE_2D-'])
                 n_std = float(values['-SLIDER-NOISE_2D-'])
@@ -1144,7 +1098,6 @@ def main():
                 cBarUnc.ax.set_xlabel('std')
                 plt.axis("off")
                 fig_agg5.draw()
-
                 
             if (event == 'Uncer' or event == 'up2d') and updated:
                 if values['Uncer'] == True:
@@ -1159,7 +1112,7 @@ def main():
                         #plt.axis("off")
 
                         plt.imshow(RED,cmap='autumn', alpha = std_stand)
-                        cBarRed = plt.colorbar(matplotlib.cm.ScalarMappable(norm=mpc.Normalize(vmin=0, vmax=np.max(std)),cmap=mpc.LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
+                        cBarRed = plt.colorbar(ScalarMappable(norm=Normalize(vmin=0, vmax=np.max(std)),cmap=LinearSegmentedColormap.from_list("",["white","red"])),fraction=0.046, pad=0.04)
                         cBarRed.ax.set_xlabel('std')
                         fig_agg4.draw()
                     except: pass
