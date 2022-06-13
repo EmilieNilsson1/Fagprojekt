@@ -82,7 +82,7 @@ def main():
         [sg.Button('Show initial signal', key = '-SHOW1D-')],
         [sg.Text('_'*120)],
         [sg.Text('Prior distribution', font=medium_font),sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 3))], 
-        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nNotice that laplace and cauchy is used on the difference between consecutive elements. \nChoosing laplace, cauchy or uniform requires significantly more computation time than gaussian.',
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between consecutive elements follow Laplace Distribution. \nCauchy: Difference between consecutive elements follow Cauchy Distribution \nUniform: Elements follow an Uniform Distribution',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 3)))],
         [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (150, 300)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
          sg.Button('Laplace', image_data=resize_base64_image("laplace.png", (150, 300)), key='-LAPLACE-', button_color=(
