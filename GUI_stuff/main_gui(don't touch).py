@@ -89,13 +89,15 @@ def main():
          sg.Button('Uniform', image_data=resize_base64_image("uniform.png", (150, 300)), key='-UNI-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font)],
         [sg.Text('Prior parameters', font=medium_font, key='PRIOR_TEXT')],
         [place(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
-         place(sg.Slider(range=(0.01, 1.0), default_value=0.1, resolution=0.01, orientation='h',
+         place(sg.Slider(range=(0.01, 100), default_value=1, resolution=0.01, orientation='h',
                           enable_events=True, disable_number_display=True, key='-SLIDER1-', visible=False, size=(20, 10))),
          sg.Input('0.1', key='-INPUT-PAR1-', visible=True,
                   enable_events=True, size=(5, 1))],
         #[place(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
         [place(sg.Text('', font=small_font, key='-PAR2-', visible=True)),
          place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
+         [place(sg.Text('', font=small_font, key='-PAR3-', visible=True)),
+         place(sg.Combo(['0', '1', '2'], default_value='0', key='-ORDER_1D-', readonly= True, visible=False, size=(10, 1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
@@ -302,19 +304,24 @@ def main():
     fig_agg = draw_figure(canvas, fig)
 
     # setting Gaussian as default
-    Dist1D = "Gaussian"
+    Dist1D = "GMRF"
     window['PRIOR_TEXT'].update('Parameters for gaussian distribution')
+    # window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
     window['-GAUSSIAN-'].update(button_color=(None, 'green'))
     window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
     window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
     window['-UNI-'].update(button_color=sg.TRANSPARENT_BUTTON)
     window['-PAR1-'].update(visible=True)
     window['-SLIDER1-'].update(visible=True)
-    window['-PAR1-'].update('Std')
+    window['-PAR1-'].update('Precision')
     # removes buttons if other prior was chosen first
-    window['-PAR2-'].update(visible=False)
-    window['-BCTYPE-'].update(visible=False)
-    window['-FIGUP-'].update(visible=False)
+    window['-PAR2-'].update(visible=True)
+    window['-BCTYPE-'].update(visible=True)
+    window['-PAR2-'].update('Boundary')
+    window['-PAR3-'].update(visible=True)
+    window['-PAR3-'].update('Order')
+    window['-ORDER_1D-'].update(visible=True)
+        #window['-FIGUP-'].update(visible=False)
 
     # for input boxes
     test_1D = [True, True, True, True]
@@ -475,7 +482,7 @@ def main():
             # Select prior distribution
             # buttons change accordingly
             if event == '-GAUSSIAN-':
-                Dist1D = "Gaussian"
+                Dist1D = "GMRF"
                 window['PRIOR_TEXT'].update('Parameters for gaussian distribution')
                 # window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
                 window['-GAUSSIAN-'].update(button_color=(None, 'green'))
@@ -486,9 +493,13 @@ def main():
                 window['-SLIDER1-'].update(visible=True)
                 window['-PAR1-'].update('Std')
                 # removes buttons if other prior was chosen first
-                window['-PAR2-'].update(visible=False)
-                window['-BCTYPE-'].update(visible=False)
-                window['-FIGUP-'].update(visible=False)
+                window['-PAR2-'].update(visible=True)
+                window['-BCTYPE-'].update(visible=True)
+                window['-PAR2-'].update('Boundary')
+                window['-PAR3-'].update(visible=True)
+                window['-PAR3-'].update('Order')
+                window['-ORDER_1D-'].update(visible=True)
+                 #window['-FIGUP-'].update(visible=False)
             elif event == '-LAPLACE-':
                 Dist1D = "Laplace_diff"
                 window['PRIOR_TEXT'].update('Parameters for laplace distribution')
@@ -502,6 +513,8 @@ def main():
                 window['-PAR2-'].update(visible=True)  # add new parameter
                 window['-PAR2-'].update('Boundary')
                 window['-BCTYPE-'].update(visible=True)
+                window['-PAR3-'].update(visible=False)
+                window['-ORDER_1D-'].update(visible=False)
             elif event == '-CAUCHY-':
                 Dist1D = "Cauchy_diff"
                 window['PRIOR_TEXT'].update('Parameters for cauchy distribution')
@@ -515,6 +528,8 @@ def main():
                 window['-PAR2-'].update(visible=True)
                 window['-PAR2-'].update('Boundary')
                 window['-BCTYPE-'].update(visible=True)
+                window['-PAR3-'].update(visible=False)
+                window['-ORDER_1D-'].update(visible=False)
             elif event == '-UNI-':
                 Dist1D == 'Uniform'
                 window['-UNI-'].update(button_color=(None, 'green'))
@@ -528,6 +543,8 @@ def main():
                 # removes buttons if other prior was chosen first
                 window['-PAR2-'].update(visible=False)
                 window['-BCTYPE-'].update(visible=False)
+                window['-PAR3-'].update(visible=False)
+                window['-ORDER_1D-'].update(visible=False)
 
             # Checking for errors in input boxes
             if sum(test_1D) != 4:
@@ -557,6 +574,7 @@ def main():
                 # Get values from input
                 par1_1D = float(values['-SLIDER1-'])
                 par2_1D = values['-BCTYPE-']
+                par3_1D = int(values['-ORDER_1D-'])
                 sampsize_1D = int(values['-SLIDER-SAMPLE-'])
                 conf = int(values['-SLIDER-CONF-'])
                 n_std_1D = float(values['-SLIDER-NOISE-'])
@@ -565,8 +583,10 @@ def main():
                 sig = values['-TESTSIG-']
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig, noise_std=n_std_1D)
 
-                if Dist1D == "Gaussian":
-                    TP_1D.prior = getattr(cuqi.distribution, Dist1D)(np.zeros(128), par1_1D)
+                if Dist1D == "GMRF":
+                    TP_1D.prior = getattr(cuqi.distribution, Dist1D)(np.zeros(128), prec = par1_1D, bc_type=par2_1D, order = par3_1D)
+                    window['-OUTPUT-'].update(visible=True)
+                    window['-LOADTXT-'].update(visible=True)
 
                 if Dist1D == "Laplace_diff":
                     TP_1D.prior = getattr(cuqi.distribution, Dist1D)(location=np.zeros(128), scale=par1_1D, bc_type=par2_1D)
@@ -867,7 +887,7 @@ def main():
                 window['-PAR1_2D-'].update(visible = True)
                 window['-SLIDER1_2D-'].update(visible=True)
                 window['-RIGHT1_2D-'].update(visible=True)
-                window['-PAR1_2D-'].update('Std')
+                window['-PAR1_2D-'].update('Precision')
                 window[('-IB_2D-',6)].update(visible=True)
             elif event == '-LAPLACE_2D-':
                 test[1] = True

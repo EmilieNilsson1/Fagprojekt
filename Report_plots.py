@@ -2,6 +2,7 @@
 import numpy as np
 import scipy.stats as sps
 import matplotlib.pyplot as plt
+import cuqi
 
 #%%
 # making pdfs
@@ -40,10 +41,10 @@ plt.savefig("Unif1D", dpi = 350)
 
 #%%
 # generating random walks with laplace and cauchy
-np.random.seed(235424)
-n = 1000
-d_l = np.random.laplace(scale=1,size=n)
-d_g = np.random.normal(scale=1,loc=0,size=n)
+np.random.seed(24424)
+n = 500
+d_l = np.random.laplace(scale=0.3,loc=0,size=n)
+d_g = np.random.normal(scale=0.3,loc=0,size=n)
 #d_c = np.random.standard_cauchy(size = n)
 d_c = sps.cauchy.rvs(size=n,scale=0.3)
 x_l = np.zeros(n)
@@ -57,9 +58,50 @@ for i in range(n):
 #plt.plot(x_c)
 plt.figure()
 plt.plot(x_l, label = "Laplace")
-plt.plot(x_g, label = "Cauchy")
-#plt.savefig("Laplace_Randomwalk", dpi = 350)
-plt.legend(loc =2, fontsize = 10)
+plt.savefig("Laplace_Randomwalk", dpi = 350)
+plt.figure()
+plt.plot(x_c, label = "Cauchy")
 plt.savefig("Cauchy_Randomwalk", dpi = 350)
+#plt.savefig("Laplace_Randomwalk", dpi = 350)
+#plt.legend(loc =2, fontsize = 10)
 
-# %%
+
+#%%
+
+n = 128*128
+prior1 = cuqi.distribution.GMRF(np.zeros(n),prec=0.1,order=0,physical_dim=2)
+prior2 = cuqi.distribution.GMRF(np.zeros(n),prec=0.1,order=1,physical_dim=2)
+prior3 = cuqi.distribution.GMRF(np.zeros(n),prec=0.1,order=2,physical_dim=2)
+prior4 = cuqi.distribution.GMRF(np.zeros(n),prec=10,order=0,physical_dim=2)
+prior5 = cuqi.distribution.GMRF(np.zeros(n),prec=10,order=1,physical_dim=2)
+prior6 = cuqi.distribution.GMRF(np.zeros(n),prec=10,order=2,physical_dim=2)
+
+plt.figure()
+prior1.sample().plot()
+print(max(prior1.sample()))
+plt.savefig("GMRF1.png",dpi=350)
+
+plt.figure()
+prior2.sample().plot()
+print(max(prior2.sample()))
+plt.savefig("GMRF2.png",dpi=350)
+
+plt.figure()
+prior3.sample().plot()
+print(max(prior3.sample()))
+plt.savefig("GMRF3.png",dpi=350)
+
+plt.figure()
+prior4.sample().plot()
+print(max(prior4.sample()))
+plt.savefig("GMRF4.png",dpi=350)
+
+plt.figure()
+prior5.sample().plot()
+print(max(prior5.sample()))
+plt.savefig("GMRF5.png",dpi=350)
+
+plt.figure()
+prior6.sample().plot()
+print(max(prior6.sample()))
+plt.savefig("GMRF6.png",dpi=350)
