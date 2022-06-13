@@ -36,21 +36,6 @@ def fourphases(size=None):
         img = imresize(img, size) 
     return img
 
-def ppower(size=None):
-    """ppower picture."""
-    stream = pkg_resources.resource_stream(__name__, 'data/ppower.mat')
-    img= spio.loadmat(stream)['im']
-    if size:
-        img = imresize(img, size) 
-    return img
-
-def threephases(size=None):
-    """threephases picture."""
-    stream = pkg_resources.resource_stream(__name__, 'data/threephases.mat')
-    img= spio.loadmat(stream)['im']
-    if size:
-        img = imresize(img, size) 
-    return img
 
 def threephasessmooth(size=None):
     """threephases picture."""
