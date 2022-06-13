@@ -60,6 +60,6 @@ while True:
                     a = a + 1
                 TP = cuqi.testproblem.Deconvolution1D(dim=dim, phantom=x[:,0], noise_std=0.05)
                 TP.prior = getattr(cuqi.distribution, 'GaussianCov')(np.zeros(data.size), 0.1)
-
+                
                 sd.play(x, dim//1.5, blocking=True)
                 sd.play(data,samplerate,blocking=True)
