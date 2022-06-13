@@ -94,7 +94,7 @@ def main():
         [place(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
          place(sg.Slider(range=(0.01, 100), default_value=1, resolution=0.01, orientation='h',
                           enable_events=True, disable_number_display=True, key='-SLIDER1-', visible=False, size=(20, 10))),
-         sg.Input('0.1', key='-INPUT-PAR1-', visible=True,
+         sg.Input('1', key='-INPUT-PAR1-', visible=True,
                   enable_events=True, size=(5, 1)),
         place(sg.Text('   ', font=small_font)),
         place(sg.Text('Max', font=small_font, key='-PAR1B-', visible=False)),
@@ -171,11 +171,11 @@ def main():
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
-        [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
+        [sg.Text('Parameters for Gaussian Markov Random Field', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
         [sg.pin(sg.Text('The order and precision determine the precision matrix from which the covariance matrix is determined', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
-        [place(sg.Text('Precision',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
-        place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
+        [place(sg.Text('Precision',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,100),default_value=1, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
+        place(sg.InputText('1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
         [place(sg.Text('Order', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font = medium_font)],
@@ -312,7 +312,7 @@ def main():
 
     # setting Gaussian as default
     Dist1D = "GMRF"
-    window['PRIOR_TEXT'].update('Parameters for gaussian distribution')
+    window['PRIOR_TEXT'].update('Parameters for Gaussian Markov Random Field')
     # window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
     window['-GAUSSIAN-'].update(button_color=(None, 'green'))
     window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -333,7 +333,7 @@ def main():
     window['-FIGUP-'].update(visible=False)
 
     # for input boxes
-    test_1D = [True, True, True, True]
+    test_1D = [True, True, True, True, True]
     while True: 
 
         event, values = window.read()
@@ -391,7 +391,6 @@ def main():
 
                 # par1 input box
                 if event == '-INPUT-PAR1-':
-                    if Dist1D != 'Uniform':
                         try:
                             if float(values['-INPUT-PAR1-']) >= window.Element('-SLIDER1-').Range[0] and float(values['-INPUT-PAR1-']) <= window.Element('-SLIDER1-').Range[1]:
                                 window.Element(
@@ -422,24 +421,24 @@ def main():
                     try:
                         if float(values['-INPUT-PAR1B-']) >= window.Element('-SLIDER1B-').Range[0] and float(values['-INPUT-PAR1B-']) <= window.Element('-SLIDER1B-').Range[1]:
                             window.Element(
-                                '-SLIDER1-').update(value=values['-INPUT-PAR1B-'])
+                                '-SLIDER1B-').update(value=values['-INPUT-PAR1B-'])
                             window.Element(
                                 '-INPUT-PAR1B-').update(background_color=orig_col)
-                            test_1D[1] = True
+                            test_1D[2] = True
                         else:
-                            window.Element('-SLIDER1B-').update(value=0.1)
+                            window.Element('-SLIDER1B-').update(value=1)
                             window.Element(
                                 '-INPUT-PAR1B-').update(background_color='red')
-                            test_1D[1] = False
+                            test_1D[2] = False
                     except:
-                        window.Element('-SLIDER1B-').update(value=0.1)
+                        window.Element('-SLIDER1B-').update(value=1)
                         window.Element('-INPUT-PAR1B-').update(background_color='red')
-                        test_1D[1] = False
+                        test_1D[2] = False
 
                 if event == '-SLIDER1B-':
                     window.Element(
                         '-INPUT-PAR1B-').update(values['-SLIDER1B-'])
-                    test_1D[1] = True
+                    test_1D[2] = True
                     window.Element(
                         '-INPUT-PAR1B-').update(background_color=orig_col)
 
@@ -451,22 +450,22 @@ def main():
                                 '-SLIDER-SAMPLE-').update(value=values['-INPUT-SAMPLE-'])
                             window.Element(
                                 '-INPUT-SAMPLE-').update(background_color=orig_col)
-                            test_1D[2] = True
+                            test_1D[3] = True
                         else:
                             window.Element('-SLIDER-SAMPLE-').update(value=100)
                             window.Element(
                                 '-INPUT-SAMPLE-').update(background_color='red')
-                            test_1D[2] = False
+                            test_1D[3] = False
                     except:
                         window.Element('-SLIDER-SAMPLE-').update(value=100)
                         window.Element(
                             '-INPUT-SAMPLE-').update(background_color='red')
-                        test_1D[2] = False
+                        test_1D[3] = False
 
                 if event == '-SLIDER-SAMPLE-':
                     window.Element(
                         '-INPUT-SAMPLE-').update(int(values['-SLIDER-SAMPLE-']))
-                    test_1D[2] = True
+                    test_1D[3] = True
                     window.Element(
                         '-INPUT-SAMPLE-').update(background_color=orig_col)
 
@@ -478,22 +477,22 @@ def main():
                                 '-SLIDER-CONF-').update(value=values['-INPUT-CONF-'])
                             window.Element(
                                 '-INPUT-CONF-').update(background_color=orig_col)
-                            test_1D[3] = True
+                            test_1D[4] = True
                         else:
                             window.Element('-SLIDER-CONF-').update(value=95)
                             window.Element(
                                 '-INPUT-CONF-').update(background_color='red')
-                            test_1D[3] = False
+                            test_1D[4] = False
                     except:
                         window.Element('-SLIDER-CONF-').update(value=95)
                         window.Element(
                             '-INPUT-CONF-').update(background_color='red')
-                        test_1D[3] = False
+                        test_1D[4] = False
 
                 if event == '-SLIDER-CONF-':
                     window.Element(
                         '-INPUT-CONF-').update(int(values['-SLIDER-CONF-']))
-                    test_1D[3] = True
+                    test_1D[4] = True
                     window.Element(
                         '-INPUT-CONF-').update(background_color=orig_col)
 
@@ -519,7 +518,7 @@ def main():
             # buttons change accordingly
             if event == '-GAUSSIAN-':
                 Dist1D = "GMRF"
-                window['PRIOR_TEXT'].update('Parameters for gaussian distribution')
+                window['PRIOR_TEXT'].update('Parameters for Gaussian Markov Random Field')
                 # window['-GAUSSIAN-'].update(button_color='white on green') # updates buttons
                 window['-GAUSSIAN-'].update(button_color=(None, 'green'))
                 window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -541,7 +540,7 @@ def main():
                  #window['-FIGUP-'].update(visible=False)
             elif event == '-LAPLACE-':
                 Dist1D = "Laplace_diff"
-                window['PRIOR_TEXT'].update('Parameters for laplace distribution')
+                window['PRIOR_TEXT'].update('Parameters for Laplace Distribution')
                 window['-LAPLACE-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -559,7 +558,7 @@ def main():
                 window['-ORDER_1D-'].update(visible=False)
             elif event == '-CAUCHY-':
                 Dist1D = "Cauchy_diff"
-                window['PRIOR_TEXT'].update('Parameters for cauchy distribution')
+                window['PRIOR_TEXT'].update('Parameters for Cauchy Distribution')
                 window['-CAUCHY-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
                 window['-UNI-'].update(button_color=sg.TRANSPARENT_BUTTON)
@@ -576,14 +575,17 @@ def main():
                 window['-PAR3-'].update(visible=False)
                 window['-ORDER_1D-'].update(visible=False)
             elif event == '-UNI-':
-                Dist1D == 'Uniform'
+                Dist1D = "Uniform"
                 window['-UNI-'].update(button_color=(None, 'green'))
-                window['PRIOR_TEXT'].update('Parameters for uniform distribution')
+                window['PRIOR_TEXT'].update('Parameters for Uniform Distribution')
                 window['-GAUSSIAN-'].update(button_color=sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE-'].update(button_color=sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY-'].update(button_color=sg.TRANSPARENT_BUTTON)
                 window['-PAR1-'].update(visible=True)
-                window['-SLIDER1-'].update(visible=True,range=(-5,5))
+                window['-SLIDER1-'].update(visible=True)
+                window['-SLIDER1-'].update(range=(-5,5))
+                window['-SLIDER1-'].update(value=0)
+                #window['-INPUT-PAR1-'].update(value=0)
                 window['-PAR1-'].update('Min')
                 window['-PAR1B-'].update(visible=True)
                 window['-INPUT-PAR1B-'].update(visible=True)
@@ -595,10 +597,10 @@ def main():
                 window['-ORDER_1D-'].update(visible=False)
 
             # Checking for errors in input boxes
-            if sum(test_1D) != 4:
+            if sum(test_1D) != 5:
                 window['-UPDATE-1D-'].update(disabled=True)
                 window['-UPDATE-1D-'].update(button_color='gray')
-            elif sum(test_1D) == 4:
+            elif sum(test_1D) == 5:
                 window['-UPDATE-1D-'].update(disabled=False)
                 window['-UPDATE-1D-'].update(button_color=sg.theme_button_color())
 
@@ -648,9 +650,7 @@ def main():
                     window['-LOADTXT-'].update(visible=True)
 
                 if Dist1D == "Uniform":
-                    Low = par1_1D
-                    High = par1B_1D
-                    TP_1D.prior = getattr(cuqi.distribution, Dist1D)(low=Low, high=High)
+                    TP_1D.prior = getattr(cuqi.distribution, Dist1D)(low=par1_1D, high=par1B_1D)
                     window['-LOADTXT-'].update(visible=True)
 
                 try:
@@ -659,6 +659,7 @@ def main():
                     window['-FIGUP-'].update(visible=True)
                     window['-FIGUP-'].update(text_color='red')
                     window['-FIGUP-'].update('Sampler not implemented')
+                    window['-LOADTXT-'].update(visible=False)
                 else:
                     window['-FIGUP-'].update('Figure updated!')
                     window['-FIGUP-'].update(text_color='white')
@@ -891,7 +892,7 @@ def main():
                 Dist2D = "GaussianCov"
                 window['ORDER'].update(value = '0',values = ['0', '1', '2'])
                 window['ORDER_TEXT'].update('Order')
-                window['PRIOR_TEXT_2D'].update('Set parameters for gaussian distribution')
+                window['PRIOR_TEXT_2D'].update('Parameters for Gaussian Markov Random Field')
                 window['ORDER_TEXT'].update(visible=True)
                 window['ALPHA_TEXT'].update('Precision') 
                 window['ALPHA_TEXT'].update(visible=True)  
@@ -914,7 +915,7 @@ def main():
                 window['ALPHA'].update(visible = True)
                 window['ALPHA'].update(range = (0.01,1))
                 Dist2D = "Laplace_diff"
-                window['PRIOR_TEXT_2D'].update('Set parameters for laplace distribution')
+                window['PRIOR_TEXT_2D'].update('Parameters for Laplace Distribution')
                 window['-LAPLACE_2D-'].update(button_color=(None,'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
@@ -931,7 +932,7 @@ def main():
                 window['ALPHA_TEXT'].update('Scale')  
                 window['ALPHA'].update(visible = True)
                 window['ALPHA'].update(range = (0.01,1))
-                window['PRIOR_TEXT_2D'].update('Set parameters for cauchy distribution')
+                window['PRIOR_TEXT_2D'].update('Parameters for Cauchy Distribution')
                 window['-CAUCHY_2D-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
