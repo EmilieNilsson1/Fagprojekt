@@ -54,7 +54,7 @@ def place(elem):
 
 # Main method
 def main():
-    iNum = 4
+    iNum = 5
     iTog = np.full((iNum,), False)
     updated_1D = False
     iNum2D = 7
@@ -82,7 +82,7 @@ def main():
         [sg.Button('Show initial signal', key = '-SHOW1D-')],
         [sg.Text('_'*120)],
         [sg.Text('Prior distribution', font=medium_font),sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 3))], 
-        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between consecutive elements follow Laplace Distribution. \nCauchy: Difference between consecutive elements follow Cauchy Distribution \nUniform: Elements follow an Uniform Distribution',
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between consecutive elements follow a Laplace Distribution. \nCauchy: Difference between consecutive elements follow a Cauchy Distribution \nUniform: Elements follow an Uniform Distribution',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 3)))],
         [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (150, 300)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
          sg.Button('Laplace', image_data=resize_base64_image("laplace.png", (150, 300)), key='-LAPLACE-', button_color=(
@@ -124,7 +124,10 @@ def main():
         [sg.pin(sg.Text('Choose size of confidence interval of the reconstructed solution. \nThe confidence interval is computed as percentiles of the posterior samples. \nValues range from 0% to 100%. ',
                         text_color='black', background_color='light yellow', visible=bool(iTog[2]), key=('-ITX-', 2)))],
         [sg.Checkbox('Show true signal', default=False, key='TRUE_SIGNAL', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox(
-            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox('Show RSS', default=True, key='RSS', enable_events=True, pad=(3, 10), font=small_font)],
+            'Show confidence interval', default=True, key='PLOT-CONF', enable_events=True, pad=(3, 10), font=small_font), sg.Checkbox('Show RSS', default=True, key='RSS', enable_events=True, pad=(3, 10), font=small_font),
+            sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 4))],
+            [sg.pin(sg.Text('Choose what you want to see in the plot. The RSS is the residual sum of squares between the reconstruction and the true signal',
+                        text_color='black', background_color='light yellow', visible=bool(iTog[4]), key=('-ITX-', 4)))],
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key='-UPDATE-1D-'),
          sg.Button('Exit', size=(10, 1), font=medium_font),
          sg.Text('Figure updated', visible=False, key='-FIGUP-', text_color='white', font=medium_font, enable_events=True)],
@@ -164,16 +167,16 @@ def main():
         [sg.Button('Show initial signal', key = 'show2D')],
         [sg.Text('_'*120)],
         [sg.Text('Prior distribution', font =medium_font), sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
-        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nNotice that laplace and cauchy is used on the difference between consecutive elements', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
+        [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between neighbouring elements follow a Laplace Distribution. \nCauchy: Difference between neighbouring elements follow a Cauchy Distribution', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
         sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
         [sg.Text('Parameters for gaussian distribution', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
-        [sg.pin(sg.Text('The precision matrix is the inverse of the covariance matrix. \nThe three types are given as the order of a toeplitz matrix \nwhich is then scaled by alpha squared.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
-        [place(sg.Text('Precision Matrix Type', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))], 
-        [place(sg.Text('Alpha',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
+        [sg.pin(sg.Text('The order and precision determine the precision matrix from which the covariance matrix is determined', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
+        [place(sg.Text('Precision',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,10),default_value=0.05, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('0.1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
+        [place(sg.Text('Order', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))],
         [sg.Text('_'*120)],
         [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
@@ -183,7 +186,7 @@ def main():
         [sg.pin(sg.Text('Change sample size. Choosing large values \nmay cause long computation time.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[1]), key= ('-ITX_2D-',1)))],
         [sg.Checkbox('Add uncertainty overlay', default=False, key='Uncer', enable_events = True, font = small_font),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',2))],
-        [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues are become more transparent. Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
+        [sg.pin(sg.Text('The uncertainty image is added as a red overlay on the reconstruction.\nThe values are scaled so the largest std value is red and smaller\nvalues become more transparent. A Gaussian prior will often result in\na completely red overlay.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[2]), key= ('-ITX_2D-',2)))],
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font, key = '-EXIT_2D-'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
@@ -887,10 +890,10 @@ def main():
             if event == '-GAUSSIAN_2D-':
                 Dist2D = "GaussianCov"
                 window['ORDER'].update(value = '0',values = ['0', '1', '2'])
-                window['ORDER_TEXT'].update('Precision Matrix Type')
+                window['ORDER_TEXT'].update('Order')
                 window['PRIOR_TEXT_2D'].update('Set parameters for gaussian distribution')
                 window['ORDER_TEXT'].update(visible=True)
-                window['ALPHA_TEXT'].update('Alpha') 
+                window['ALPHA_TEXT'].update('Precision') 
                 window['ALPHA_TEXT'].update(visible=True)  
                 window['ORDER'].update(visible=True)
                 window['ALPHA'].update(value = 0.05)
@@ -899,10 +902,6 @@ def main():
                 window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
                 window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-                window['-PAR1_2D-'].update(visible = True)
-                window['-SLIDER1_2D-'].update(visible=True)
-                window['-RIGHT1_2D-'].update(visible=True)
-                window['-PAR1_2D-'].update('Precision')
                 window[('-IB_2D-',6)].update(visible=True)
 
             elif event == '-LAPLACE_2D-':
