@@ -64,9 +64,45 @@ plt.plot(x_c, label = "Cauchy")
 plt.savefig("Cauchy_Randomwalk", dpi = 350)
 #plt.savefig("Laplace_Randomwalk", dpi = 350)
 #plt.legend(loc =2, fontsize = 10)
+#%% 1D GMRF
+n1 = 128
+prior1 = cuqi.distribution.GMRF(np.zeros(n1),prec=0.1,order=0,physical_dim=1)
+prior2 = cuqi.distribution.GMRF(np.zeros(n1),prec=0.1,order=1,physical_dim=1)
+prior3 = cuqi.distribution.GMRF(np.zeros(n1),prec=0.1,order=2,physical_dim=1)
+prior4 = cuqi.distribution.GMRF(np.zeros(n1),prec=10,order=0,physical_dim=1)
+prior5 = cuqi.distribution.GMRF(np.zeros(n1),prec=10,order=1,physical_dim=1)
+prior6 = cuqi.distribution.GMRF(np.zeros(n1),prec=10,order=2,physical_dim=1)
 
+plt.figure()
+prior1.sample().plot()
+print(max(prior1.sample()))
+plt.savefig("GMRF1_1D.png",dpi=350)
 
-#%%
+plt.figure()
+prior2.sample().plot()
+print(max(prior2.sample()))
+plt.savefig("GMRF2_1D.png",dpi=350)
+
+plt.figure()
+prior3.sample().plot()
+print(max(prior3.sample()))
+plt.savefig("GMRF3_1D.png",dpi=350)
+
+plt.figure()
+prior4.sample().plot()
+print(max(prior4.sample()))
+plt.savefig("GMRF4_1D.png",dpi=350)
+
+plt.figure()
+prior5.sample().plot()
+print(max(prior5.sample()))
+plt.savefig("GMRF5_1D.png",dpi=350)
+
+plt.figure()
+prior6.sample().plot()
+print(max(prior6.sample()))
+plt.savefig("GMRF6_1D.png",dpi=350)
+#%% 2D GMRF
 
 n = 128*128
 prior1 = cuqi.distribution.GMRF(np.zeros(n),prec=0.1,order=0,physical_dim=2)
