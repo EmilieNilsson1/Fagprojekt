@@ -57,7 +57,7 @@ def main():
     iNum = 5
     iTog = np.full((iNum,), False)
     updated_1D = False
-    iNum2D = 7
+    iNum2D = 6
     iTog2D = np.full((iNum2D,) , False )
     test = True
     file_types = [("JPEG (*.jpg)", "*.jpg"),("PNG (*.png)", "*.png"),
@@ -80,14 +80,14 @@ def main():
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise \nValues range from 0.01 to 1.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 0)))],
         [sg.Button('Show initial signal', key = '-SHOW1D-')],
-        [sg.Text('_'*120)],
+        [sg.Text('_'*80)],
         [sg.Text('Prior distribution', font=medium_font),sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 3))], 
         [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between consecutive elements follow a Laplace Distribution. \nCauchy: Difference between consecutive elements follow a Cauchy Distribution',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 3)))],
-        [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (150, 300)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
-         sg.Button('Laplace', image_data=resize_base64_image("laplace.png", (150, 300)), key='-LAPLACE-', button_color=(
+        [sg.Button('Gaussian', image_data=resize_base64_image("gauss.png", (160, 320)), key='-GAUSSIAN-', button_color=('black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
+         sg.Button('Laplace', image_data=resize_base64_image("laplace.png", (156, 320)), key='-LAPLACE-', button_color=(
              'black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font),
-         sg.Button('Cauchy', image_data=resize_base64_image("cauchy.png", (150, 300)), key='-CAUCHY-', button_color=(
+         sg.Button('Cauchy', image_data=resize_base64_image("cauchy.png", (160, 320)), key='-CAUCHY-', button_color=(
              'black', None), border_width=10, mouseover_colors=('black', 'black'), auto_size_button=True, font=medium_font)],
         [sg.Text('Prior parameters', font=medium_font, key='PRIOR_TEXT')],
         [place(sg.Text('Par1', font=small_font, key='-PAR1-', visible=False)),
@@ -97,10 +97,10 @@ def main():
                   enable_events=True, size=(5, 1))],
         #[place(sg.Text('Par2', font=small_font, key='-PAR2-', visible=False)),
         [place(sg.Text('', font=small_font, key='-PAR2-', visible=True)),
-         place(sg.Combo(['zero', 'periodic'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
+         place(sg.Combo(['zero', 'periodic', 'neumann'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
          [place(sg.Text('', font=small_font, key='-PAR3-', visible=True)),
-         place(sg.Combo(['0', '1', '2'], default_value='0', key='-ORDER_1D-', readonly= True, visible=False, size=(10, 1)))],
-        [sg.Text('_'*120)],
+         place(sg.Combo(['0', '1', '2'], default_value='0', key='-ORDER_1D-', readonly= True, visible=False, size=(2, 1)))],
+        [sg.Text('_'*80)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
          sg.Slider(range=(10, 3000), default_value=100, resolution=10, size=(
@@ -158,19 +158,18 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
         [sg.Button('Show initial signal', key = 'show2D')],
-        [sg.Text('_'*120)],
+        [sg.Text('_'*80)],
         [sg.Text('Prior distribution', font =medium_font), sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
         [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between neighbouring elements follow a Laplace Distribution. \nCauchy: Difference between neighbouring elements follow a Cauchy Distribution', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
-        [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (150,300)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (150,300)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
-        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (150,300)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
-        [sg.Text('Parameters for Gaussian Markov Random Field', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True),
-        sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',6),visible=True)],
-        [sg.pin(sg.Text('The order and precision determine the precision matrix from which the covariance matrix is determined', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[6]), key= ('-ITX_2D-',6)))],
+        [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (160,320)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
+        sg.Button('Laplace', image_data = resize_base64_image("laplace2d.png", (160,320)), key = '-LAPLACE_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
+        sg.Button('Cauchy', image_data = resize_base64_image("cauchy2d.png", (160,320)), key = '-CAUCHY_2D-', button_color=('black', None), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font)], 
+        [sg.Text('Parameters for Gaussian Markov Random Field', font =medium_font, key = 'PRIOR_TEXT_2D', visible = True)],
         [place(sg.Text('Precision',key = 'ALPHA_TEXT', font = small_font)),place(sg.Slider((0.01,100),default_value=1, resolution=0.01, key = 'ALPHA',  size=(20, 10),orientation='h', disable_number_display=True,  enable_events = True)), 
         place(sg.InputText('1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
-        [place(sg.Text('Order', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER', size = (5,1)))],
-        [sg.Text('_'*120)],
+        [place(sg.Text('Boundary', key = 'BOUNDS_TEXT', font = small_font)),place(sg.Combo(['zero','periodic','neumann'],default_value = 'zero', readonly= True, key = 'BOUNDS_2D', size = (10,1)))],
+        [place(sg.Text('Order', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER_2D', size = (2,1)))],
+        [sg.Text('_'*80)],
         [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
@@ -811,63 +810,44 @@ def main():
                 window['-TESTSIG_2D-'].update(value = 'satellite')
                 window['file_error'].update(visible = False)
             
-            if event == '-GAUSSIAN_2D-' or event == '-LAPLACE_2D-' or event == '-CAUCHY_2D-':
-                window.Element('ALPHA').update(value = 0.05)
-                window.Element('-RIGHTA_2D-').update(value = 0.05)
-                window.Element('-RIGHTA_2D-').update(background_color = orig_col)
-                test[0] = True
-                test[1] = True
             if event == '-GAUSSIAN_2D-':
                 Dist2D = "GaussianCov"
-                window['ORDER'].update(value = '0',values = ['0', '1', '2'])
-                window['ORDER_TEXT'].update('Order')
+                window['ORDER_2D'].update(visible=True)
                 window['PRIOR_TEXT_2D'].update('Parameters for Gaussian Markov Random Field')
                 window['ORDER_TEXT'].update(visible=True)
                 window['ALPHA_TEXT'].update('Precision') 
                 window['ALPHA_TEXT'].update(visible=True)  
-                window['ORDER'].update(visible=True)
-                window['ALPHA'].update(value = 0.05)
+                window['ALPHA'].update(value = 1)
                 window['ALPHA'].update(visible=True)
-                window['ALPHA'].update(range = (0.01,10))
                 window['-GAUSSIAN_2D-'].update(button_color=(None,'green'))
                 window['-CAUCHY_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
-                window[('-IB_2D-',6)].update(visible=True)
 
             elif event == '-LAPLACE_2D-':
                 test[1] = True
-                window['ORDER_TEXT'].update('Boundary')
+                window['ORDER_TEXT'].update(visible=False)
+                window['ORDER_2D'].update(visible=False)
                 window['ALPHA_TEXT'].update('Scale')
                 window['ALPHA_TEXT'].update(visible = True)
-                window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
                 window['ALPHA_TEXT'].update('Scale')  
-                window['ALPHA'].update(visible = True)
-                window['ALPHA'].update(range = (0.01,1))
                 Dist2D = "Laplace_diff"
                 window['PRIOR_TEXT_2D'].update('Parameters for Laplace Distribution')
                 window['-LAPLACE_2D-'].update(button_color=(None,'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-CAUCHY_2D-'].update(button_color = sg.TRANSPARENT_BUTTON)
-                window[('-IB_2D-',6)].update(visible=False)
-                iTog2D[6] = False
-                window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
             elif event == '-CAUCHY_2D-':
                 Dist2D = "Cauchy_diff"
                 test[1] = True
-                window['ORDER_TEXT'].update('Boundary')
+                window['ORDER_TEXT'].update(visible=False)
+                window['ORDER_2D'].update(visible=False)
                 window['ALPHA_TEXT'].update('Scale')
                 window['ALPHA_TEXT'].update(visible = True)
-                window['ORDER'].update(value = 'zero', values = ['zero', 'periodic'])
                 window['ALPHA_TEXT'].update('Scale')  
-                window['ALPHA'].update(visible = True)
-                window['ALPHA'].update(range = (0.01,1))
                 window['PRIOR_TEXT_2D'].update('Parameters for Cauchy Distribution')
                 window['-CAUCHY_2D-'].update(button_color=(None, 'green'))
                 window['-GAUSSIAN_2D-'].update(button_color= sg.TRANSPARENT_BUTTON)
                 window['-LAPLACE_2D-'].update(button_color=sg.TRANSPARENT_BUTTON)
-                window[('-IB_2D-',6)].update(visible=False)
-                iTog2D[6] = False
-                window[('-ITX_2D-',6)].update(visible=bool(iTog2D[6]))
+            
             if sum(test) != 5:
                 window['up2d'].update(disabled=True)
                 window['up2d'].update(button_color='gray')
@@ -988,12 +968,10 @@ def main():
                 # Get values from input
                 sz = int(values['-SLIDER-SIZE_2D-'])
                 par1 = float(values['ALPHA'])
-                par2 = values['ORDER']
+                par2 = values['BOUNDS_2D']
+                order = int(values['ORDER_2D'])
                 sampsize = int(values['-SLIDER-SAMPLE_2D-'])
                 n_std = float(values['-SLIDER-NOISE_2D-'])
-                try:
-                    order = int(values['ORDER'])
-                except: pass
                 alpha = float(values['ALPHA'])
 
                 # Define and compute posterior to Deconvolution problem
@@ -1016,7 +994,7 @@ def main():
                     TP_2D = cuqi.testproblem.Deconvolution2D(dim = sz, phantom = sig, noise_std = n_std)
                 
                 if Dist2D == "GaussianCov": 
-                    TP_2D.prior = cuqi.distribution.GMRF(np.zeros(TP_2D.model.domain_dim), alpha, order = order, physical_dim=2)
+                    TP_2D.prior = cuqi.distribution.GMRF(np.zeros(TP_2D.model.domain_dim), prec = alpha, order = order, bc_type = par2, physical_dim=2)
                     window['-OUTPUT_2D-'].update(visible = True)
                 
                 
