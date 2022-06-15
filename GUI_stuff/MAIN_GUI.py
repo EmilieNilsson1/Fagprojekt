@@ -80,7 +80,7 @@ def main():
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise \nValues range from 0.01 to 1.',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 0)))],
         [sg.Button('Show initial signal', key = '-SHOW1D-')],
-        [sg.Text('_'*80)],
+        [sg.Text('_'*100)],
         [sg.Text('Prior distribution', font=medium_font),sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 3))], 
         [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between consecutive elements follow a Laplace Distribution. \nCauchy: Difference between consecutive elements follow a Cauchy Distribution',
                         text_color='black', background_color='light yellow', visible=bool(iTog[0]), key=('-ITX-', 3)))],
@@ -100,7 +100,7 @@ def main():
          place(sg.Combo(['zero', 'periodic', 'neumann'], default_value='zero', key='-BCTYPE-', readonly= True, visible=False, size=(10, 1)))],
          [place(sg.Text('', font=small_font, key='-PAR3-', visible=True)),
          place(sg.Combo(['0', '1', '2'], default_value='0', key='-ORDER_1D-', readonly= True, visible=False, size=(2, 1)))],
-        [sg.Text('_'*80)],
+        [sg.Text('_'*100)],
         [sg.Text('Plot options', font=medium_font)],
         [sg.Text('Sample size', font=small_font),
          sg.Slider(range=(10, 3000), default_value=100, resolution=10, size=(
@@ -131,14 +131,15 @@ def main():
 
     plot_column = [
         [sg.Canvas(size=(1100, 620), key='-CANVAS-')],
-        [sg.Text('', key = 'error1D')]
+        #[sg.Push(),sg.Canvas(size=(1100, 620), key='-CANVAS-',pad = (30,0)),sg.Push()],
+        #[sg.Text('', key = 'error1D')]
     ]
 
     # 1D layout:
     tab1_layout = [
         [sg.Column(options_column),
          sg.VSeperator(),
-         sg.Column(plot_column), ]
+         sg.Column(plot_column)]
     ]
     options_column2D = [
         [sg.Text('Test signal', font =medium_font)],
@@ -158,7 +159,7 @@ def main():
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
         [sg.Button('Show initial signal', key = 'show2D')],
-        [sg.Text('_'*80)],
+        [sg.Text('_'*100)],
         [sg.Text('Prior distribution', font =medium_font), sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',3))], 
         [sg.pin(sg.Text('Choose the prior distribution used when solving the deconvolution problem. \nGaussian: Elements follow a Gaussian Markov Random Field \nLaplace: Difference between neighbouring elements follow a Laplace Distribution. \nCauchy: Difference between neighbouring elements follow a Cauchy Distribution', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[3]), key= ('-ITX_2D-',3)))],
         [sg.Button('Gaussian', image_data = resize_base64_image("gauss2d.png", (160,320)), key = '-GAUSSIAN_2D-', button_color=('black', 'Green'), border_width = 10, mouseover_colors=('black', 'black'), auto_size_button=True, font = medium_font), 
@@ -169,7 +170,7 @@ def main():
         place(sg.InputText('1', key='-RIGHTA_2D-', visible = True, enable_events = True, size = (5,0.8), background_color = None))],
         [place(sg.Text('Boundary', key = 'BOUNDS_TEXT', font = small_font)),place(sg.Combo(['zero','periodic','neumann'],default_value = 'zero', readonly= True, key = 'BOUNDS_2D', size = (10,1)))],
         [place(sg.Text('Order', key = 'ORDER_TEXT', font = small_font)),place(sg.Combo([0,1,2],default_value = 0, readonly= True, key = 'ORDER_2D', size = (2,1)))],
-        [sg.Text('_'*80)],
+        [sg.Text('_'*100)],
         [sg.Text('Plot options', font = medium_font)],
         [sg.Text('Sample size', font = small_font), 
         sg.Slider(range=(10, 1000), default_value=10, resolution=10, size=(20, 10), orientation='h', key='-SLIDER-SAMPLE_2D-', enable_events = True, disable_number_display=True),
@@ -182,6 +183,7 @@ def main():
         [sg.Button('Run', size=(10, 1), font=medium_font, enable_events=True, key = 'up2d'),
         sg.Button('Exit', size=(10, 1), font=medium_font, key = '-EXIT_2D-'),
         sg.Text('Figure updated', visible = False, key = '-FIGUP_2D-', text_color = 'red', font= medium_font, enable_events = True)],
+        [sg.Text('Sampling in progress...', visible=False, key='-LOADTXT2D-',pad=(3, 10))],
         [sg.Multiline(size=(20,1.5), no_scrollbar = True, auto_refresh = True, autoscroll = True, reroute_stdout = False, visible = False, key='-OUTPUT_2D-', enable_events= True, do_not_clear = False)]
     ]
 
@@ -220,7 +222,7 @@ def main():
     tab2_layout = [
         [sg.Column(options_column2D),
         sg.VSeperator(),
-        sg.Column(plot_column2D),]
+        sg.Column(plot_column2D)]
     ]
     layCol_wel = [
         [sg.Text('\nWelcome to our CUQI Interactive Demo. By using this demo you will get an intuitive understanding of computational uncertainty quantification for inverse problems.', font =medium2_font)],
@@ -272,23 +274,23 @@ def main():
     canvas5 = canvas_elem5.TKCanvas
 
     # Draw the initial figures in the window
-    fig1, axs = plt.subplots(nrows = 2, ncols = 2,figsize = (6,6))
+    fig1, axs = plt.subplots(nrows = 2, ncols = 2,figsize = (7.2,7.2))
     fig_agg1 = draw_figure(canvas1, fig1)
     axs[0,0].axis('off')
     axs[0,1].axis('off')
     axs[1,0].axis('off')
     axs[1,1].axis('off')
 
-    fig2 = plt.figure(2,figsize = (6,6))
+    fig2 = plt.figure(2,figsize = (7.2,7.2))
     fig_agg2 = draw_figure(canvas2, fig2)
 
-    fig3 = plt.figure(3,figsize = (6,6))
+    fig3 = plt.figure(3,figsize = (7.2,7.2))
     fig_agg3 = draw_figure(canvas3, fig3)
 
-    fig4 = plt.figure(4,figsize = (6,6))
+    fig4 = plt.figure(4,figsize = (7.2,7.2))
     fig_agg4 = draw_figure(canvas4, fig4)
 
-    fig5 = plt.figure(5,figsize = (6,6))
+    fig5 = plt.figure(5,figsize = (7.2,7.2))
     fig_agg5 = draw_figure(canvas5, fig5)
 
     test = [True, True, True, True, True]
@@ -299,7 +301,7 @@ def main():
     canvas = canvas_elem.TKCanvas
 
     # Draw the initial figure in the window
-    fig = plt.figure(6, figsize=(6, 6))
+    fig = plt.figure(6, figsize=(7.2, 7.2))
     fig_agg = draw_figure(canvas, fig)
 
     # setting Gaussian as default
@@ -995,16 +997,22 @@ def main():
                 
                 if Dist2D == "GaussianCov": 
                     TP_2D.prior = cuqi.distribution.GMRF(np.zeros(TP_2D.model.domain_dim), prec = alpha, order = order, bc_type = par2, physical_dim=2)
+                    window['-LOADTXT2D-'].update(visible = True)
                     window['-OUTPUT_2D-'].update(visible = True)
+                    
                 
                 
                 if Dist2D == "Laplace_diff":
                     TP_2D.prior = getattr(cuqi.distribution, Dist2D)(location = np.zeros(TP_2D.model.domain_dim), scale = par1, bc_type = par2, physical_dim = 2)
+                    window['-LOADTXT2D-'].update(visible = True)
                     window['-OUTPUT_2D-'].update(visible = True)
+                    
                     
                 if Dist2D == "Cauchy_diff":
                     TP_2D.prior = getattr(cuqi.distribution, Dist2D)(location = np.zeros(TP_2D.model.domain_dim), scale = par1, bc_type = par2)
+                    window['-LOADTXT2D-'].update(visible = True)
                     window['-OUTPUT_2D-'].update(visible = True)
+                    
                     
                 try:
                     xs = TP_2D.sample_posterior(sampsize) # Sample posterior
@@ -1019,6 +1027,7 @@ def main():
 
                     # Remove output window
                     window['-OUTPUT_2D-'].update(visible=False)
+                    window['-LOADTXT2D-'].update(visible = False)
 
                 #fig1.clear()
                 error_2D = sum((xs.mean() - TP_2D.exactSolution)**2)
