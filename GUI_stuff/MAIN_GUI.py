@@ -631,8 +631,9 @@ def main():
                     fig_agg.draw()
 
                     # Remove output window
-                    window['-OUTPUT-'].update(visible=False)
                     window['-LOADTXT-'].update(visible=False)
+                    window['-OUTPUT-'].update(visible=False)
+                    
 
             # Show true signal/confidence interval or not
 
@@ -1026,8 +1027,9 @@ def main():
                     window['-FIGUP_2D-'].update(visible = True)
 
                     # Remove output window
-                    window['-OUTPUT_2D-'].update(visible=False)
                     window['-LOADTXT2D-'].update(visible = False)
+                    window['-OUTPUT_2D-'].update(visible=False)
+                    
 
                 #fig1.clear()
                 error_2D = sum((xs.mean() - TP_2D.exactSolution)**2)
