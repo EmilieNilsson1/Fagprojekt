@@ -72,8 +72,8 @@ def main():
     options_column = [
         [sg.Text('Test signal', font=medium_font)],
         [sg.Text('From library', font = small_font), sg.Combo(['Gauss', 'sinc', 'vonMises', 'square', 'hat', 'bumps',
-                   'derivGauss'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
-        [sg.Text('Noise std', font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
+                   'derivGauss', 'two squares'], readonly=True, key='-TESTSIG-', default_value='Gauss')],
+        [sg.Text('Noise std', font=small_font), sg.Slider(range=(0, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE-', enable_events=True, disable_number_display=True),
          sg.Input('0.05', key='-INPUT-NOISE-', visible=True,
                   enable_events=True, size=(5, 1)),
          sg.Button(image_data=resize_base64_image("info.png", (30, 30)), border_width=0, button_color=sg.theme_background_color(), key=('-IB-', 0))],
@@ -154,7 +154,7 @@ def main():
         sg.Input('128', key='-RIGHT_SIZE_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), visible = False, key = ('-IB_2D-',5))],
         [sg.pin(sg.Text('Image Dimension: ( , )', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[5]), key= ('-ITX_2D-',5)))],
-        [sg.Text('Noise std',font=small_font), sg.Slider(range=(0.01, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
+        [sg.Text('Noise std',font=small_font), sg.Slider(range=(0, 1), default_value=0.05, resolution=0.01, size=(20, 10), orientation='h', key='-SLIDER-NOISE_2D-', enable_events = True, disable_number_display=True), 
         sg.Input('0.05', key='-RIGHTn_2D-', visible = True, enable_events = True, size = (5,1)),
         sg.Button(image_data=resize_base64_image("info.png", (30,30)), border_width=0 , button_color=sg.theme_background_color(), key = ('-IB_2D-',0))],
         [sg.pin(sg.Text('Change standard deviation of the normally distributed noise. \nValues range from 0.01 to 1.', text_color='black' , background_color = 'light yellow', visible= bool(iTog2D[0]), key= ('-ITX_2D-',0)))],
@@ -444,22 +444,22 @@ def main():
                                 '-SLIDER-CONF-').update(value=values['-INPUT-CONF-'])
                             window.Element(
                                 '-INPUT-CONF-').update(background_color=orig_col)
-                            test_1D[4] = True
+                            test_1D[2] = True
                         else:
                             window.Element('-SLIDER-CONF-').update(value=95)
                             window.Element(
                                 '-INPUT-CONF-').update(background_color='red')
-                            test_1D[4] = False
+                            test_1D[2] = False
                     except:
                         window.Element('-SLIDER-CONF-').update(value=95)
                         window.Element(
                             '-INPUT-CONF-').update(background_color='red')
-                        test_1D[4] = False
+                        test_1D[2] = False
 
                 if event == '-SLIDER-CONF-':
                     window.Element(
                         '-INPUT-CONF-').update(int(values['-SLIDER-CONF-']))
-                    test_1D[4] = True
+                    test_1D[2] = True
                     window.Element(
                         '-INPUT-CONF-').update(background_color=orig_col)
 
@@ -468,6 +468,9 @@ def main():
                 updated_1D = False
                 n_std_1D = float(values['-SLIDER-NOISE-'])
                 sig_1D = values['-TESTSIG-']
+                if sig_1D == "two squares":
+                    x1,x2,x3,x4 = [0]*50,[1]*14,[-1]*14,[0]*50
+                    sig_1D  = np.array(x1 +x2 +x3 +x4)
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig_1D, noise_std=n_std_1D)
                 grid = np.linspace(0, 128, 128)
 
@@ -565,6 +568,9 @@ def main():
 
                 # Define and compute posterior to Deconvolution problem
                 sig = values['-TESTSIG-']
+                if sig == "two squares":
+                    x1,x2,x3,x4 = [0]*50,[1]*14,[-1]*14,[0]*50
+                    sig  = np.array(x1 +x2 +x3 +x4)
                 TP_1D = cuqi.testproblem.Deconvolution1D(phantom=sig, noise_std=n_std_1D)
 
                 if Dist1D == "GMRF":
@@ -1144,6 +1150,5 @@ if __name__ == '__main__':
     sg.change_look_and_feel('Dark Blue 12') #Theme
     main() #Runs main method
 
-# %%
 
 # %%
