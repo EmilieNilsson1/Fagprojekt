@@ -1016,7 +1016,7 @@ def main():
                     
                     
                 if Dist2D == "Cauchy_diff":
-                    TP_2D.prior = getattr(cuqi.distribution, Dist2D)(location = np.zeros(TP_2D.model.domain_dim), scale = par1, bc_type = par2)
+                    TP_2D.prior = getattr(cuqi.distribution, Dist2D)(location = np.zeros(TP_2D.model.domain_dim), scale = par1, bc_type = par2, physical_dim = 2)
                     window['-LOADTXT2D-'].update(visible = True)
                     window['-OUTPUT_2D-'].update(visible = True)
                     
