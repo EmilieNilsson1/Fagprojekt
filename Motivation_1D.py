@@ -25,10 +25,13 @@ p_plot = p
 p[0] = normd(0)
 for i in range(1,psf_size):
     p[i]=normd(0.25*i)
-p *= 1/(np.sum(p))
+p *= 1/(2*np.sum(p)-p[0])
+print("p is", p)
 p_plot = np.append(p,np.zeros(x.size//4))
 p = np.append(p,np.zeros(x.size-psf_size))
+print("p is now", p)
 A = linalg.toeplitz(p,p)
+print(A)
 print("cond of A is",np.linalg.cond(A))
 
 # Adding noise
@@ -75,4 +78,21 @@ plt.savefig("bad_recon.png", dpi = 350)
 # sub[2].plot(range(x.size),x_solve)
 # sub[2].set_title("Reconstructed input signal")
 
+
 # %%
+# plots for presentation
+plt.figure(4)
+plt.plot(range(b_smooth_noise.size),b_smooth_noise)
+plt.savefig("lesgo.png", dpi = 350)
+
+plt.figure(5)
+plt.plot(range(x.size),x_solve)
+plt.title(r'$A^{-1}b$',fontname="Times New Roman",fontweight="bold")
+plt.savefig("lesgo2.png", dpi = 350)
+
+plt.figure(6)
+plt.plot(range(x.size),x)
+plt.title(r'$\text{x}$',fontname="Times New Roman",fontweight="bold")
+plt.savefig("lesgo3.png", dpi = 350)
+
+
